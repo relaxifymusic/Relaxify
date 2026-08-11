@@ -1,414 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080b14">
+  <title>Relaxify — Find Your Peace</title>
 
-<title>Relaxify — Music</title>
-
-<style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    background: #080808;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    min-height: 100vh;
-}
-
-header {
-    padding: 22px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.logo {
-    font-size: 25px;
-    font-weight: 700;
-    letter-spacing: -1px;
-}
-
-.online {
-    color: #777;
-    font-size: 13px;
-}
-
-.online span {
-    color: #6cff8a;
-}
-
-/* SEARCH */
-
-.search {
-    padding: 0 20px;
-}
-
-.search input {
-    width: 100%;
-    padding: 15px 18px;
-    border-radius: 30px;
-    border: 1px solid #292929;
-    background: #141414;
-    color: white;
-    outline: none;
-    font-size: 15px;
-}
-
-.search input::placeholder {
-    color: #666;
-}
-
-/* PLAYER */
-
-.player {
-    margin: 30px 20px;
-    padding: 25px;
-    background: #111;
-    border: 1px solid #202020;
-    border-radius: 25px;
-    text-align: center;
-}
-
-.cover {
-    width: 230px;
-    height: 230px;
-    border-radius: 18px;
-    object-fit: cover;
-}
-
-.song {
-    margin-top: 20px;
-    font-size: 21px;
-    font-weight: 700;
-}
-
-.artist {
-    margin-top: 7px;
-    color: #777;
-}
-
-.progress {
-    width: 100%;
-    margin-top: 25px;
-    accent-color: white;
-}
-
-.controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 25px;
-    margin-top: 20px;
-}
-
-button {
-    border: none;
-    background: #222;
-    color: white;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    font-size: 18px;
-}
-
-.play {
-    width: 65px;
-    height: 65px;
-    background: white;
-    color: black;
-    font-size: 24px;
-}
-
-/* SOURCES */
-
-.section {
-    padding: 0 20px 30px;
-}
-
-.section h2 {
-    margin-bottom: 15px;
-    font-size: 20px;
-}
-
-.source {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
-    background: #111;
-    border: 1px solid #1d1d1d;
-    border-radius: 17px;
-    margin-bottom: 12px;
-}
-
-.icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #222;
-    font-size: 23px;
-}
-
-.source-info {
-    flex: 1;
-}
-
-.source-info b {
-    display: block;
-}
-
-.source-info span {
-    display: block;
-    color: #666;
-    font-size: 13px;
-    margin-top: 4px;
-}
-
-.source button {
-    width: 42px;
-    height: 42px;
-}
-
-/* DESKTOP */
-
-@media (min-width: 700px) {
-
-    .player {
-        max-width: 500px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .section {
-        max-width: 700px;
-        margin: auto;
-    }
-}
-</style>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<header>
+  <header class="navbar">
+    <a href="#" class="logo">
+      <span class="logo-icon">♪</span>
+      <span>Relaxify</span>
+    </a>
 
-    <div class="logo">
-        Relaxify
-    </div>
+    <nav>
+      <a href="#home">Home</a>
+      <a href="#discover">Discover</a>
+      <a href="#moods">Moods</a>
+    </nav>
+  </header>
 
-    <div class="online">
-        ● <span>Online</span>
-    </div>
+  <main>
 
-</header>
+    <!-- HERO -->
+    <section class="hero" id="home">
+
+      <div class="hero-content">
+
+        <p class="eyebrow">
+          SLOW DOWN • BREATHE • LISTEN
+        </p>
+
+        <h1>
+          Find your
+          <span>peace.</span>
+        </h1>
+
+        <p class="hero-description">
+          Discover relaxing music, sleep sounds, meditation,
+          lo-fi and peaceful moments from YouTube.
+        </p>
+
+        <!-- SEARCH -->
+        <form class="search-box" id="searchForm">
+
+          <span class="search-icon">⌕</span>
+
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="Search relaxing music..."
+            autocomplete="off"
+          >
+
+          <button type="submit">
+            Search
+          </button>
+
+        </form>
+
+        <!-- QUICK SEARCH -->
+        <div class="quick-searches" id="moods">
+
+          <button data-query="relaxing music">
+            🌿 Relax
+          </button>
+
+          <button data-query="sleep music">
+            🌙 Sleep
+          </button>
+
+          <button data-query="lofi chill">
+            ☕ Lo-fi
+          </button>
+
+          <button data-query="meditation music">
+            🧘 Meditation
+          </button>
+
+          <button data-query="nature sounds">
+            🌊 Nature
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="hero-orb">
+        <div class="orb-center">
+          ♪
+        </div>
+      </div>
+
+    </section>
 
 
-<div class="search">
+    <!-- DISCOVER -->
+    <section class="discover" id="discover">
 
-    <input
-        id="search"
-        type="text"
-        placeholder="Search music..."
-    >
+      <div class="section-header">
 
-</div>
+        <div>
+          <p class="eyebrow">
+            DISCOVER
+          </p>
+
+          <h2 id="resultsTitle">
+            Relaxing picks
+          </h2>
+        </div>
+
+        <span id="status">
+          Ready when you are
+        </span>
+
+      </div>
 
 
-<div class="player">
+      <!-- PLAYER -->
 
-    <img
-        id="cover"
-        class="cover"
-        src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600"
-        alt="Music">
+      <div
+        class="player-container hidden"
+        id="playerContainer"
+      >
 
-    <div
-        id="title"
-        class="song">
-        Relaxify
-    </div>
+        <div class="player">
 
-    <div
-        id="artist"
-        class="artist">
-        Choose music
-    </div>
+          <iframe
+            id="youtubePlayer"
+            title="Relaxify Player"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowfullscreen>
+          </iframe>
 
-    <input
-        class="progress"
-        type="range"
-        min="0"
-        max="100"
-        value="0"
-    >
-
-    <div class="controls">
-
-        <button onclick="previousSong()">
-            ⏮
-        </button>
+        </div>
 
         <button
-            class="play"
-            onclick="togglePlay()"
-            id="playButton">
-            ▶
+          class="close-player"
+          id="closePlayer"
+        >
+          ✕ Close player
         </button>
 
-        <button onclick="nextSong()">
-            ⏭
-        </button>
-
-    </div>
-
-</div>
+      </div>
 
 
-<div class="section">
+      <!-- RESULTS -->
 
-    <h2>Music Sources</h2>
+      <div
+        class="results"
+        id="results"
+      >
 
+        <div class="empty-state">
 
-    <div class="source">
+          <div class="empty-icon">
+            ☾
+          </div>
 
-        <div class="icon">
-            ▶
-        </div>
+          <h3>
+            Choose a mood
+          </h3>
 
-        <div class="source-info">
-
-            <b>YouTube</b>
-
-            <span>
-                Search & play from YouTube
-            </span>
+          <p>
+            Search above to discover peaceful music.
+          </p>
 
         </div>
 
-        <button onclick="openYouTube()">
-            →
-        </button>
+      </div>
 
-    </div>
+    </section>
 
-
-    <div class="source">
-
-        <div class="icon">
-            ♪
-        </div>
-
-        <div class="source-info">
-
-            <b>Spotify</b>
-
-            <span>
-                Open Spotify music
-            </span>
-
-        </div>
-
-        <button onclick="openSpotify()">
-            →
-        </button>
-
-    </div>
-
-</div>
+  </main>
 
 
-<script>
+  <footer>
 
-let playing = false;
+    <strong>
+      Relaxify
+    </strong>
 
+    <span>
+      Made for quieter moments.
+    </span>
 
-/* PLAY / PAUSE */
-
-function togglePlay() {
-
-    playing = !playing;
-
-    const button =
-        document.getElementById("playButton");
-
-    button.textContent =
-        playing ? "❚❚" : "▶";
-}
+  </footer>
 
 
-/* NEXT */
-
-function nextSong() {
-
-    alert("Next song system will be connected soon 🎵");
-
-}
-
-
-/* PREVIOUS */
-
-function previousSong() {
-
-    alert("Previous song system will be connected soon 🎵");
-
-}
-
-
-/* YOUTUBE */
-
-function openYouTube() {
-
-    window.open(
-        "https://www.youtube.com/",
-        "_blank"
-    );
-
-}
-
-
-/* SPOTIFY */
-
-function openSpotify() {
-
-    window.open(
-        "https://open.spotify.com/",
-        "_blank"
-    );
-
-}
-
-
-/* SEARCH */
-
-document
-.getElementById("search")
-.addEventListener("keypress", function(event) {
-
-    if (event.key === "Enter") {
-
-        const query =
-            this.value.trim();
-
-        if (!query) return;
-
-        window.open(
-            "https://www.youtube.com/results?search_query="
-            + encodeURIComponent(query),
-            "_blank"
-        );
-
-    }
-
-});
-
-</script>
+  <script src="script.js"></script>
 
 </body>
 </html>
