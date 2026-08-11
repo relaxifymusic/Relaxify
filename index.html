@@ -1,187 +1,309 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#05070c">
-  <title>Relaxify — Indian Music</title>
+  <meta charset="UTF-8" />
 
-  <link rel="stylesheet" href="style.css">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
+
+  <meta
+    name="description"
+    content="RELAXIFY — a cinematic music experience."
+  />
+
+  <meta name="theme-color" content="#0b0d12" />
+
+  <title>RELAXIFY</title>
+
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
-  <div class="background"></div>
+  <main id="app">
 
-  <main class="app">
+    <!-- =========================================
+         BACKGROUND
+    ========================================== -->
 
-    <header class="topbar">
+    <div
+      id="background"
+      class="background"
+      aria-hidden="true"
+    ></div>
 
-      <div class="brand">
-        Relaxify
-      </div>
+    <div
+      id="backgroundOverlay"
+      class="background-overlay"
+      aria-hidden="true"
+    ></div>
 
-      <button
-        id="searchButton"
-        class="search-button"
-        type="button"
-        aria-label="Search"
-      >
-        🔍
-      </button>
 
+    <!-- =========================================
+         RELAXIFY LOGO / TITLE
+    ========================================== -->
+
+    <header class="brand-container">
+      <h1 id="brand" class="brand">
+        RELAXIFY
+      </h1>
     </header>
 
 
-    <!-- SEARCH -->
+    <!-- =========================================
+         LYRICS AREA
+    ========================================== -->
 
-    <div
-      id="searchPanel"
-      class="search-panel"
+    <section
+      id="lyricsArea"
+      class="lyrics-area"
+      aria-live="polite"
+      aria-label="Song lyrics"
     >
 
-      <input
-        id="searchInput"
-        type="search"
-        placeholder="Search Hindi song..."
-        autocomplete="off"
-      >
+      <!-- JavaScript will insert lyrics here -->
 
-      <div
-        id="searchSuggestions"
-        class="search-suggestions"
-      ></div>
-
-    </div>
+    </section>
 
 
-    <!-- PLAYER -->
+    <!-- =========================================
+         BOTTOM CONTROLS
+    ========================================== -->
 
-    <section class="player-section">
-
-      <div class="glass-player">
-
-        <div class="player-top">
-
-          <div
-            id="cover"
-            class="cover"
-          >
-
-            <div class="cover-note">
-              ♪
-            </div>
-
-          </div>
+    <section class="controls-area">
 
 
-          <div class="song-info">
+      <!-- =======================================
+           SEARCH
+      ======================================== -->
 
-            <h1 id="songTitle">
-              Relaxify
-            </h1>
+      <div id="searchContainer" class="search-container">
 
-            <p id="artistName">
-              Press play to start Indian music
-            </p>
-
-          </div>
-
-
-          <div class="controls">
-
-            <button
-              id="previousButton"
-              type="button"
-              aria-label="Previous"
-            >
-              ⏮
-            </button>
-
-            <button
-              id="playButton"
-              class="main-play"
-              type="button"
-              aria-label="Play"
-            >
-              ▶
-            </button>
-
-            <button
-              id="nextButton"
-              type="button"
-              aria-label="Next"
-            >
-              ⏭
-            </button>
-
-          </div>
-
-        </div>
+        <!-- Normally only this button is visible -->
+        <button
+          id="searchButton"
+          class="search-button glass-button"
+          type="button"
+          aria-label="Open search"
+          aria-expanded="false"
+        >
+          🔍
+        </button>
 
 
-        <div class="progress-area">
-
-          <span id="currentTime">
-            0:00
-          </span>
-
-          <input
-            id="progress"
-            type="range"
-            min="0"
-            max="100"
-            value="0"
-          >
-
-          <span id="duration">
-            0:00
-          </span>
-
-        </div>
-
+        <!-- Expanded search panel -->
 
         <div
-          id="status"
-          class="status"
+          id="searchPanel"
+          class="search-panel glass"
+          hidden
         >
-          Ready
+
+          <div class="search-input-container">
+
+            <span
+              class="search-icon"
+              aria-hidden="true"
+            >
+              🔍
+            </span>
+
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="Search songs..."
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Search songs"
+            />
+
+            <button
+              id="clearSearchButton"
+              class="clear-search"
+              type="button"
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+
+          </div>
+
+
+          <!-- Search results / recent searches -->
+
+          <div
+            id="searchResults"
+            class="search-results"
+          >
+
+            <!--
+              JavaScript will insert:
+
+              Recent searches
+              Search suggestions
+              Album artwork
+              Song name
+              Artist name
+            -->
+
+          </div>
+
         </div>
+
+      </div>
+
+
+      <!-- =======================================
+           MUSIC PLAYER
+      ======================================== -->
+
+      <div
+        id="musicPlayer"
+        class="music-player glass"
+      >
+
+
+        <!-- Album artwork -->
+
+        <div class="album-art-container">
+
+          <img
+            id="albumArt"
+            class="album-art"
+            src="assets/default-art.jpg"
+            alt="Album artwork"
+          />
+
+        </div>
+
+
+        <!-- Song information -->
+
+        <div class="song-information">
+
+          <div
+            id="songTitle"
+            class="song-title"
+          >
+            Loading...
+          </div>
+
+          <div
+            id="artistName"
+            class="artist-name"
+          >
+            —
+          </div>
+
+
+          <!-- Progress -->
+
+          <div class="progress-container">
+
+            <input
+              id="progressBar"
+              class="progress-bar"
+              type="range"
+              min="0"
+              max="100"
+              value="0"
+              step="0.1"
+              aria-label="Song progress"
+            />
+
+          </div>
+
+        </div>
+
+
+        <!-- =====================================
+             PLAYER BUTTONS
+        ====================================== -->
+
+        <div class="player-buttons">
+
+          <button
+            id="previousButton"
+            class="player-button small-button glass-button"
+            type="button"
+            aria-label="Previous song"
+          >
+            ⏮
+          </button>
+
+
+          <button
+            id="playButton"
+            class="player-button play-button glass-button"
+            type="button"
+            aria-label="Play"
+          >
+            ▶
+          </button>
+
+
+          <button
+            id="nextButton"
+            class="player-button small-button glass-button"
+            type="button"
+            aria-label="Next song"
+          >
+            ⏭
+          </button>
+
+        </div>
+
+
+        <!-- Lyrics button -->
+
+        <button
+          id="lyricsButton"
+          class="lyrics-button glass-button"
+          type="button"
+          aria-label="Show lyrics"
+        >
+          ♪ Lyrics
+        </button>
 
       </div>
 
     </section>
 
 
-    <!-- YOUTUBE PLAYER -->
+    <!-- =========================================
+         HIDDEN AUDIO / PLAYER HOST
+    ========================================== -->
 
     <div
-      id="youtubePlayer"
-      class="youtube-player"
+      id="audioPlayer"
+      class="audio-player"
+      aria-hidden="true"
     ></div>
 
 
-    <footer>
+    <!-- =========================================
+         NOTIFICATION / TOAST
+    ========================================== -->
 
-      <span>
-        <strong>Relaxify</strong>
-        • Indian Music
-      </span>
-
-      <a
-        href="https://instagram.com/sakil_miah_"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        @sakil_miah_
-      </a>
-
-    </footer>
+    <div
+      id="toast"
+      class="toast"
+      role="status"
+      aria-live="polite"
+    ></div>
 
   </main>
 
 
-  <script src="script.js"></script>
+  <!-- =========================================
+       JAVASCRIPT
+  ========================================== -->
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
 
 </body>
 </html>
