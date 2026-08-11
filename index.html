@@ -15,6 +15,8 @@
     rel="stylesheet"
   >
 
+  <script src="https://sdk.scdn.co/spotify-player.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -30,7 +32,7 @@
     }
 
     body {
-      font-family: "Inter", sans-serif;
+      font-family: Inter, sans-serif;
       color: white;
       background: #05070c;
     }
@@ -42,8 +44,8 @@
 
       background:
         linear-gradient(
-          rgba(0,0,0,.30),
-          rgba(0,0,0,.75)
+          rgba(0,0,0,.25),
+          rgba(0,0,0,.78)
         ),
         url("https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1920&q=85");
 
@@ -54,7 +56,6 @@
     .app {
       width: 100%;
       height: 100dvh;
-
       padding: 20px;
 
       display: flex;
@@ -63,18 +64,12 @@
       overflow: hidden;
     }
 
-    /* =========================
-       TOP
-    ========================= */
-
     .topbar {
       position: relative;
 
       display: flex;
       align-items: center;
       justify-content: center;
-
-      flex-shrink: 0;
     }
 
     .brand {
@@ -88,37 +83,41 @@
 
       letter-spacing: -3px;
 
-      text-shadow:
-        0 5px 30px rgba(0,0,0,.7);
+      text-shadow: 0 5px 30px rgba(0,0,0,.7);
     }
 
-    .search-button {
+    .top-actions {
       position: absolute;
       right: 0;
       top: 50%;
 
       transform: translateY(-50%);
 
+      display: flex;
+      gap: 7px;
+    }
+
+    .icon-button {
       width: 40px;
       height: 40px;
 
       border: 1px solid rgba(255,255,255,.18);
       border-radius: 50%;
 
-      background: rgba(20,20,25,.48);
+      background: rgba(20,20,25,.5);
 
       color: white;
-
-      font-size: 19px;
+      font-size: 18px;
 
       cursor: pointer;
 
       backdrop-filter: blur(15px);
     }
 
-    /* =========================
-       SEARCH POPUP
-    ========================= */
+    #spotifyButton.connected {
+      background: rgba(30,215,96,.25);
+      border-color: rgba(30,215,96,.6);
+    }
 
     .search-panel {
       position: absolute;
@@ -126,28 +125,23 @@
       top: 72px;
       right: 20px;
 
-      width: min(330px, calc(100% - 40px));
+      width: min(350px, calc(100% - 40px));
 
       padding: 10px;
 
       display: none;
-
       gap: 7px;
 
       z-index: 20;
 
-      border:
-        1px solid rgba(255,255,255,.16);
-
+      border: 1px solid rgba(255,255,255,.16);
       border-radius: 15px;
 
-      background:
-        rgba(15,16,22,.82);
+      background: rgba(15,16,22,.86);
 
       backdrop-filter: blur(25px);
 
-      box-shadow:
-        0 15px 50px rgba(0,0,0,.5);
+      box-shadow: 0 15px 50px rgba(0,0,0,.5);
     }
 
     .search-panel.open {
@@ -169,8 +163,7 @@
 
       color: white;
 
-      background:
-        rgba(255,255,255,.09);
+      background: rgba(255,255,255,.09);
     }
 
     .search-panel input::placeholder {
@@ -193,13 +186,8 @@
       cursor: pointer;
     }
 
-    /* =========================
-       PLAYER
-    ========================= */
-
     .player-section {
       flex: 1;
-
       min-height: 0;
 
       display: flex;
@@ -218,24 +206,18 @@
 
       border-radius: 22px;
 
-      background:
-        rgba(18,19,25,.58);
+      background: rgba(18,19,25,.58);
 
-      border:
-        1px solid rgba(255,255,255,.17);
+      border: 1px solid rgba(255,255,255,.17);
 
       backdrop-filter: blur(25px);
 
-      -webkit-backdrop-filter: blur(25px);
-
-      box-shadow:
-        0 20px 60px rgba(0,0,0,.55);
+      box-shadow: 0 20px 60px rgba(0,0,0,.55);
     }
 
     .player-top {
       display: flex;
       align-items: center;
-
       gap: 11px;
     }
 
@@ -247,8 +229,7 @@
 
       border-radius: 13px;
 
-      background:
-        rgba(255,255,255,.08);
+      background: rgba(255,255,255,.08);
 
       background-size: cover;
       background-position: center;
@@ -294,7 +275,6 @@
     .controls {
       display: flex;
       align-items: center;
-
       gap: 4px;
     }
 
@@ -338,7 +318,6 @@
 
     .progress-area span {
       font-size: 9px;
-
       color: rgba(255,255,255,.55);
     }
 
@@ -355,9 +334,21 @@
       cursor: pointer;
     }
 
-    /* Hidden YouTube player */
+    .status {
+      text-align: center;
+
+      margin-top: 8px;
+
+      font-size: 9px;
+
+      color: rgba(255,255,255,.55);
+    }
 
     #youtubePlayer {
+      display: none;
+    }
+
+    #spotifyPlayer {
       position: fixed;
 
       width: 1px;
@@ -366,10 +357,6 @@
       left: -10000px;
       top: -10000px;
     }
-
-    /* =========================
-       FOOTER
-    ========================= */
 
     footer {
       flex-shrink: 0;
@@ -391,10 +378,6 @@
       color: white;
       text-decoration: none;
     }
-
-    /* =========================
-       MOBILE
-    ========================= */
 
     @media (max-height: 650px) {
 
@@ -429,19 +412,30 @@
         Relaxify
       </a>
 
-      <button
-        id="searchButton"
-        class="search-button"
-        type="button"
-        aria-label="Search"
-      >
-        ⌕
-      </button>
+      <div class="top-actions">
+
+        <button
+          id="spotifyButton"
+          class="icon-button"
+          type="button"
+          title="Connect Spotify"
+        >
+          ♪
+        </button>
+
+        <button
+          id="searchButton"
+          class="icon-button"
+          type="button"
+          title="Search"
+        >
+          ⌕
+        </button>
+
+      </div>
 
     </header>
 
-
-    <!-- SEARCH -->
 
     <form
       id="searchPanel"
@@ -462,8 +456,6 @@
     </form>
 
 
-    <!-- PLAYER -->
-
     <section class="player-section">
 
       <div class="glass-player">
@@ -483,11 +475,11 @@
           <div class="song-info">
 
             <h1 id="songTitle">
-              Relaxify
+              Connect Spotify
             </h1>
 
             <p id="artistName">
-              Indian Hindi Music
+              Search and play Indian music
             </p>
 
           </div>
@@ -498,7 +490,6 @@
             <button
               id="previousButton"
               type="button"
-              aria-label="Previous"
             >
               ⏮
             </button>
@@ -507,7 +498,6 @@
               id="playButton"
               class="main-play"
               type="button"
-              aria-label="Play"
             >
               ▶
             </button>
@@ -515,7 +505,6 @@
             <button
               id="nextButton"
               type="button"
-              aria-label="Next"
             >
               ⏭
             </button>
@@ -545,12 +534,20 @@
 
         </div>
 
+
+        <div
+          id="status"
+          class="status"
+        >
+          Connect Spotify to start
+        </div>
+
       </div>
 
     </section>
 
 
-    <div id="youtubePlayer"></div>
+    <div id="spotifyPlayer"></div>
 
 
     <footer>
