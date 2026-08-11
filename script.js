@@ -1,15 +1,33 @@
 /* =========================================
-   RELAXIFY
-   SINGLE INDIAN SONG PLAYER
+   RELAXIFY + SPOTIFY
 ========================================= */
 
-const API_URL =
-  "https://relaxify-api.djboy4696.workers.dev";
+const CLIENT_ID =
+  "1fec839a7e514123bb4b036ce63e42da";
+
+const REDIRECT_URI =
+  "https://relaxifymusic.github.io/Relaxify/";
+
+
+/* =========================================
+   SPOTIFY SCOPES
+========================================= */
+
+const SCOPES = [
+  "streaming",
+  "user-read-email",
+  "user-read-private",
+  "user-read-playback-state",
+  "user-modify-playback-state"
+].join(" ");
 
 
 /* =========================================
    ELEMENTS
 ========================================= */
+
+const spotifyButton =
+  document.getElementById("spotifyButton");
 
 const searchButton =
   document.getElementById("searchButton");
@@ -17,11 +35,11 @@ const searchButton =
 const searchPanel =
   document.getElementById("searchPanel");
 
-const searchForm =
-  document.getElementById("searchPanel");
-
 const searchInput =
   document.getElementById("searchInput");
+
+const searchForm =
+  document.getElementById("searchPanel");
 
 const songTitle =
   document.getElementById("songTitle");
@@ -50,279 +68,273 @@ const currentTime =
 const duration =
   document.getElementById("duration");
 
-const youtubePlayer =
-  document.getElementById("youtubePlayer");
+const status =
+  document.getElementById("status");
 
 
 /* =========================================
    STATE
 ========================================= */
 
-let player = null;
+let accessToken = null;
 
-let playerReady = false;
+let refreshToken = null;
+
+let tokenExpiresAt = 0;
+
+let spotifyPlayer = null;
+
+let spotifyDeviceId = null;
+
+let currentTrack = null;
 
 let isPlaying = false;
-
-let currentSong = null;
-
-let previousSongs = [];
 
 let progressTimer = null;
 
 
 /* =========================================
-   DIFFERENT SEARCHES
-   Used to avoid getting the same song
+   PKCE HELPERS
 ========================================= */
 
-const songQueries = [
+function randomString(length = 64) {
 
-  "new Hindi songs 2026",
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
 
-  "latest Bollywood songs 2026",
+  let result = "";
 
-  "Hindi trending songs 2026",
-
-  "new Hindi romantic songs 2026",
-
-  "latest Indian songs 2026",
-
-  "Hindi hit songs 2026",
-
-  "new Bollywood music 2026",
-
-  "Hindi popular songs 2026"
-
-];
-
-let queryIndex = 0;
-
-
-/* =========================================
-   LOAD YOUTUBE API
-========================================= */
-
-const ytScript =
-  document.createElement("script");
-
-ytScript.src =
-  "https://www.youtube.com/iframe_api";
-
-document.head.appendChild(
-  ytScript
-);
-
-
-/* =========================================
-   YOUTUBE READY
-========================================= */
-
-window.onYouTubeIframeAPIReady =
-  function () {
-
-    player =
-      new YT.Player(
-        youtubePlayer,
-        {
-
-          height: "1",
-          width: "1",
-
-          playerVars: {
-
-            playsinline: 1,
-
-            controls: 0,
-
-            rel: 0,
-
-            modestbranding: 1
-
-          },
-
-          events: {
-
-            onReady:
-              function () {
-
-                playerReady = true;
-
-              },
-
-
-            onStateChange:
-              function (event) {
-
-                if (
-                  event.data ===
-                  YT.PlayerState.PLAYING
-                ) {
-
-                  isPlaying = true;
-
-                  playButton.textContent =
-                    "❚❚";
-
-                  startProgress();
-
-                }
-
-
-                if (
-                  event.data ===
-                  YT.PlayerState.PAUSED
-                ) {
-
-                  isPlaying = false;
-
-                  playButton.textContent =
-                    "▶";
-
-                  stopProgress();
-
-                }
-
-
-                if (
-                  event.data ===
-                  YT.PlayerState.ENDED
-                ) {
-
-                  isPlaying = false;
-
-                  playNewIndianSong();
-
-                }
-
-              }
-
-          }
-
-        }
-      );
-
-  };
-
-
-/* =========================================
-   PLAY BUTTON
-========================================= */
-
-playButton.addEventListener(
-  "click",
-  function () {
-
-    if (!playerReady) {
-      return;
-    }
-
-
-    if (!currentSong) {
-
-      playNewIndianSong();
-
-      return;
-
-    }
-
-
-    if (isPlaying) {
-
-      player.pauseVideo();
-
-    } else {
-
-      player.playVideo();
-
-    }
-
-  }
-);
-
-
-/* =========================================
-   NEXT
-========================================= */
-
-nextButton.addEventListener(
-  "click",
-  function () {
-
-    playNewIndianSong();
-
-  }
-);
-
-
-/* =========================================
-   PREVIOUS
-========================================= */
-
-previousButton.addEventListener(
-  "click",
-  function () {
-
-    if (!previousSongs.length) {
-      return;
-    }
-
-
-    const oldSong =
-      previousSongs.pop();
-
-
-    if (!oldSong) {
-      return;
-    }
-
-
-    playSong(
-      oldSong,
-      false
+  const values =
+    crypto.getRandomValues(
+      new Uint8Array(length)
     );
 
+
+  for (
+    let i = 0;
+    i < values.length;
+    i++
+  ) {
+
+    result +=
+      characters[
+        values[i] %
+        characters.length
+      ];
+
   }
-);
+
+
+  return result;
+
+}
+
+
+async function sha256(plain) {
+
+  const encoder =
+    new TextEncoder();
+
+  const data =
+    encoder.encode(plain);
+
+  return crypto.subtle.digest(
+    "SHA-256",
+    data
+  );
+
+}
+
+
+function base64UrlEncode(input) {
+
+  return btoa(
+    String.fromCharCode(
+      ...new Uint8Array(input)
+    )
+  )
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+}
 
 
 /* =========================================
-   GET NEW SONG
+   SPOTIFY LOGIN
 ========================================= */
 
-async function playNewIndianSong() {
+async function loginSpotify() {
 
-  if (!playerReady) {
+  const verifier =
+    randomString(64);
+
+
+  const challenge =
+    base64UrlEncode(
+      await sha256(verifier)
+    );
+
+
+  const state =
+    randomString(32);
+
+
+  sessionStorage.setItem(
+    "spotify_verifier",
+    verifier
+  );
+
+
+  sessionStorage.setItem(
+    "spotify_state",
+    state
+  );
+
+
+  const params =
+    new URLSearchParams({
+
+      response_type: "code",
+
+      client_id: CLIENT_ID,
+
+      scope: SCOPES,
+
+      redirect_uri: REDIRECT_URI,
+
+      state: state,
+
+      code_challenge_method:
+        "S256",
+
+      code_challenge:
+        challenge
+
+    });
+
+
+  window.location.href =
+    "https://accounts.spotify.com/authorize?" +
+    params.toString();
+
+}
+
+
+/* =========================================
+   HANDLE CALLBACK
+========================================= */
+
+async function handleCallback() {
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const code =
+    params.get("code");
+
+
+  const returnedState =
+    params.get("state");
+
+
+  const error =
+    params.get("error");
+
+
+  if (error) {
+
+    status.textContent =
+      "Spotify login cancelled.";
+
+    window.history.replaceState(
+      {},
+      document.title,
+      REDIRECT_URI
+    );
+
+    return;
+
+  }
+
+
+  if (!code) {
     return;
   }
 
 
-  const query =
-    songQueries[
-      queryIndex %
-      songQueries.length
-    ];
+  const savedState =
+    sessionStorage.getItem(
+      "spotify_state"
+    );
 
 
-  queryIndex++;
+  if (
+    !savedState ||
+    savedState !== returnedState
+  ) {
+
+    status.textContent =
+      "Spotify security check failed.";
+
+    return;
+
+  }
+
+
+  const verifier =
+    sessionStorage.getItem(
+      "spotify_verifier"
+    );
 
 
   try {
 
-    const url =
-      `${API_URL}/search?q=${
-        encodeURIComponent(query)
-      }`;
-
-
     const response =
-      await fetch(url);
+      await fetch(
+        "https://accounts.spotify.com/api/token",
+        {
+
+          method: "POST",
+
+          headers: {
+
+            "Content-Type":
+              "application/x-www-form-urlencoded"
+
+          },
+
+          body:
+            new URLSearchParams({
+
+              grant_type:
+                "authorization_code",
+
+              code:
+                code,
+
+              redirect_uri:
+                REDIRECT_URI,
+
+              client_id:
+                CLIENT_ID,
+
+              code_verifier:
+                verifier
+
+            })
+
+        }
+      );
 
 
     if (!response.ok) {
 
       throw new Error(
-        "Search failed"
+        "Spotify token request failed"
       );
 
     }
@@ -332,62 +344,79 @@ async function playNewIndianSong() {
       await response.json();
 
 
-    const items =
-      Array.isArray(data.items)
-        ? data.items.filter(
-            function (item) {
-
-              return Boolean(
-                item &&
-                item.id &&
-                item.id.videoId
-              );
-
-            }
-          )
-        : [];
+    accessToken =
+      data.access_token;
 
 
-    if (!items.length) {
-
-      return;
-
-    }
+    refreshToken =
+      data.refresh_token;
 
 
-    /*
-      Pick a random result so that
-      every Next doesn't always play
-      the first result.
-    */
-
-    const randomIndex =
-      Math.floor(
-        Math.random() *
-        Math.min(
-          items.length,
-          10
-        )
+    tokenExpiresAt =
+      Date.now() +
+      (
+        Number(
+          data.expires_in
+        ) * 1000
       );
 
 
-    const song =
-      items[randomIndex];
-
-
-    playSong(
-      song,
-      true
+    sessionStorage.setItem(
+      "spotify_access_token",
+      accessToken
     );
+
+
+    sessionStorage.setItem(
+      "spotify_refresh_token",
+      refreshToken || ""
+    );
+
+
+    sessionStorage.setItem(
+      "spotify_expires_at",
+      String(
+        tokenExpiresAt
+      )
+    );
+
+
+    sessionStorage.removeItem(
+      "spotify_verifier"
+    );
+
+
+    sessionStorage.removeItem(
+      "spotify_state"
+    );
+
+
+    window.history.replaceState(
+      {},
+      document.title,
+      REDIRECT_URI
+    );
+
+
+    status.textContent =
+      "Spotify connected";
+
+
+    spotifyButton.classList.add(
+      "connected"
+    );
+
+
+    await startSpotifyPlayer();
 
   }
 
   catch (error) {
 
-    console.error(
-      "Relaxify:",
-      error
-    );
+    console.error(error);
+
+    status.textContent =
+      "Spotify connection failed.";
 
   }
 
@@ -395,117 +424,416 @@ async function playNewIndianSong() {
 
 
 /* =========================================
-   PLAY SONG
+   LOAD SAVED TOKEN
 ========================================= */
 
-function playSong(
-  song,
-  savePrevious
-) {
+function loadSavedToken() {
 
-  const videoId =
-    song?.id?.videoId;
+  accessToken =
+    sessionStorage.getItem(
+      "spotify_access_token"
+    );
 
 
-  if (!videoId) {
+  refreshToken =
+    sessionStorage.getItem(
+      "spotify_refresh_token"
+    );
+
+
+  tokenExpiresAt =
+    Number(
+      sessionStorage.getItem(
+        "spotify_expires_at"
+      ) || 0
+    );
+
+
+  if (
+    accessToken
+  ) {
+
+    spotifyButton.classList.add(
+      "connected"
+    );
+
+    status.textContent =
+      "Spotify connected";
+
+  }
+
+}
+
+
+/* =========================================
+   REFRESH TOKEN
+========================================= */
+
+async function refreshAccessToken() {
+
+  if (!refreshToken) {
+
+    await loginSpotify();
+
+    return null;
+
+  }
+
+
+  const response =
+    await fetch(
+      "https://accounts.spotify.com/api/token",
+      {
+
+        method: "POST",
+
+        headers: {
+
+          "Content-Type":
+            "application/x-www-form-urlencoded"
+
+        },
+
+        body:
+          new URLSearchParams({
+
+            grant_type:
+              "refresh_token",
+
+            refresh_token:
+              refreshToken,
+
+            client_id:
+              CLIENT_ID
+
+          })
+
+      }
+    );
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      "Unable to refresh Spotify token"
+    );
+
+  }
+
+
+  const data =
+    await response.json();
+
+
+  accessToken =
+    data.access_token;
+
+
+  if (
+    data.refresh_token
+  ) {
+
+    refreshToken =
+      data.refresh_token;
+
+  }
+
+
+  tokenExpiresAt =
+    Date.now() +
+    (
+      Number(
+        data.expires_in
+      ) * 1000
+    );
+
+
+  sessionStorage.setItem(
+    "spotify_access_token",
+    accessToken
+  );
+
+
+  sessionStorage.setItem(
+    "spotify_refresh_token",
+    refreshToken
+  );
+
+
+  sessionStorage.setItem(
+    "spotify_expires_at",
+    String(
+      tokenExpiresAt
+    )
+  );
+
+
+  return accessToken;
+
+}
+
+
+/* =========================================
+   VALID TOKEN
+========================================= */
+
+async function getToken() {
+
+  if (
+    !accessToken ||
+    Date.now() >
+      tokenExpiresAt - 60000
+  ) {
+
+    return refreshAccessToken();
+
+  }
+
+
+  return accessToken;
+
+}
+
+
+/* =========================================
+   SPOTIFY WEB PLAYER
+========================================= */
+
+window.onSpotifyWebPlaybackSDKReady =
+  async function () {
+
+    if (!accessToken) {
+      return;
+    }
+
+
+    await startSpotifyPlayer();
+
+  };
+
+
+async function startSpotifyPlayer() {
+
+  if (!accessToken) {
     return;
   }
 
 
-  if (
-    savePrevious &&
-    currentSong
-  ) {
-
-    previousSongs.push(
-      currentSong
-    );
-
-
-    /*
-      Keep only recent songs.
-    */
-
-    if (
-      previousSongs.length > 10
-    ) {
-
-      previousSongs.shift();
-
-    }
-
+  if (spotifyPlayer) {
+    return;
   }
 
 
-  currentSong =
-    song;
+  spotifyPlayer =
+    new Spotify.Player({
+
+      name:
+        "Relaxify Web Player",
+
+      volume:
+        0.8,
+
+      getOAuthToken:
+        async function (callback) {
+
+          try {
+
+            const token =
+              await getToken();
+
+            callback(token);
+
+          }
+
+          catch (error) {
+
+            console.error(
+              error
+            );
+
+          }
+
+        }
+
+    });
 
 
-  const snippet =
-    song.snippet || {};
+  spotifyPlayer.addListener(
+    "ready",
+    function (data) {
+
+      spotifyDeviceId =
+        data.device_id;
 
 
-  songTitle.textContent =
-    cleanText(
-      snippet.title ||
-      "Hindi Song"
-    );
-
-
-  artistName.textContent =
-    cleanText(
-      snippet.channelTitle ||
-      "Indian Music"
-    );
-
-
-  const thumbnail =
-    snippet?.thumbnails?.high?.url ||
-    snippet?.thumbnails?.medium?.url ||
-    snippet?.thumbnails?.default?.url ||
-    "";
-
-
-  if (thumbnail) {
-
-    cover.style.backgroundImage =
-      `url("${thumbnail}")`;
-
-
-    const note =
-      cover.querySelector(
-        ".cover-note"
-      );
-
-
-    if (note) {
-
-      note.style.display =
-        "none";
+      status.textContent =
+        "Spotify ready";
 
     }
-
-  }
-
-
-  progress.value = 0;
-
-  currentTime.textContent =
-    "0:00";
-
-  duration.textContent =
-    "0:00";
-
-
-  player.loadVideoById(
-    videoId
   );
 
 
-  playButton.textContent =
-    "❚❚";
+  spotifyPlayer.addListener(
+    "not_ready",
+    function () {
+
+      spotifyDeviceId =
+        null;
+
+      status.textContent =
+        "Spotify player offline";
+
+    }
+  );
+
+
+  spotifyPlayer.addListener(
+    "player_state_changed",
+    function (state) {
+
+      if (!state) {
+        return;
+      }
+
+
+      const track =
+        state.track_window
+          ?.current_track;
+
+
+      if (track) {
+
+        updateTrackUI(
+          track
+        );
+
+      }
+
+
+      isPlaying =
+        !state.paused;
+
+
+      playButton.textContent =
+        isPlaying
+          ? "❚❚"
+          : "▶";
+
+
+      progress.value =
+        state.duration
+          ? (
+              state.position /
+              state.duration
+            ) * 100
+          : 0;
+
+
+      currentTime.textContent =
+        formatTime(
+          state.position / 1000
+        );
+
+
+      duration.textContent =
+        formatTime(
+          state.duration / 1000
+        );
+
+    }
+  );
+
+
+  spotifyPlayer.addListener(
+    "initialization_error",
+    function (data) {
+
+      console.error(data);
+
+      status.textContent =
+        "Spotify player initialization error.";
+
+    }
+  );
+
+
+  spotifyPlayer.addListener(
+    "authentication_error",
+    function (data) {
+
+      console.error(data);
+
+      status.textContent =
+        "Spotify authentication error.";
+
+    }
+  );
+
+
+  spotifyPlayer.addListener(
+    "account_error",
+    function (data) {
+
+      console.error(data);
+
+      status.textContent =
+        "Spotify Premium is required.";
+
+    }
+  );
+
+
+  spotifyPlayer.addListener(
+    "playback_error",
+    function (data) {
+
+      console.error(data);
+
+      status.textContent =
+        "Spotify playback error.";
+
+    }
+  );
+
+
+  spotifyPlayer.addListener(
+    "autoplay_failed",
+    function () {
+
+      status.textContent =
+        "Tap Play to start Spotify.";
+
+    }
+  );
+
+
+  await spotifyPlayer.connect();
 
 }
+
+
+/* =========================================
+   CONNECT BUTTON
+========================================= */
+
+spotifyButton.addEventListener(
+  "click",
+  async function () {
+
+    if (!accessToken) {
+
+      await loginSpotify();
+
+      return;
+
+    }
+
+
+    status.textContent =
+      "Spotify already connected.";
+
+  }
+);
 
 
 /* =========================================
@@ -562,12 +890,24 @@ searchForm.addEventListener(
     }
 
 
+    if (!accessToken) {
+
+      status.textContent =
+        "Connect Spotify first.";
+
+      await loginSpotify();
+
+      return;
+
+    }
+
+
     searchPanel.classList.remove(
       "open"
     );
 
 
-    await searchAndPlay(
+    await searchSpotify(
       query
     );
 
@@ -576,35 +916,58 @@ searchForm.addEventListener(
 
 
 /* =========================================
-   SEARCH AND DIRECTLY PLAY ONE SONG
+   SEARCH SPOTIFY
 ========================================= */
 
-async function searchAndPlay(
+async function searchSpotify(
   query
 ) {
 
   try {
 
-    const finalQuery =
-      `${query} Hindi Indian song`;
+    const token =
+      await getToken();
 
 
-    const url =
-      `${API_URL}/search?q=${
-        encodeURIComponent(
-          finalQuery
-        )
-      }`;
+    const params =
+      new URLSearchParams({
+
+        q:
+          query,
+
+        type:
+          "track",
+
+        limit:
+          "1",
+
+        market:
+          "IN"
+
+      });
 
 
     const response =
-      await fetch(url);
+      await fetch(
+        "https://api.spotify.com/v1/search?" +
+        params.toString(),
+        {
+
+          headers: {
+
+            Authorization:
+              `Bearer ${token}`
+
+          }
+
+        }
+      );
 
 
     if (!response.ok) {
 
       throw new Error(
-        "Search failed"
+        "Spotify search failed"
       );
 
     }
@@ -614,49 +977,32 @@ async function searchAndPlay(
       await response.json();
 
 
-    const items =
-      Array.isArray(data.items)
-        ? data.items.filter(
-            function (item) {
-
-              return Boolean(
-                item &&
-                item.id &&
-                item.id.videoId
-              );
-
-            }
-          )
-        : [];
+    const track =
+      data?.tracks?.items?.[0];
 
 
-    if (!items.length) {
+    if (!track) {
+
+      status.textContent =
+        "Song not found.";
+
       return;
+
     }
 
 
-    /*
-      Search result list show nahi hogi.
-      Directly ek song play hoga.
-    */
-
-    const song =
-      items[0];
-
-
-    playSong(
-      song,
-      true
+    await playTrack(
+      track.uri
     );
 
   }
 
   catch (error) {
 
-    console.error(
-      "Search error:",
-      error
-    );
+    console.error(error);
+
+    status.textContent =
+      "Unable to search Spotify.";
 
   }
 
@@ -664,32 +1010,279 @@ async function searchAndPlay(
 
 
 /* =========================================
-   PROGRESS BAR
+   PLAY TRACK
+========================================= */
+
+async function playTrack(
+  uri
+) {
+
+  try {
+
+    const token =
+      await getToken();
+
+
+    if (!spotifyDeviceId) {
+
+      status.textContent =
+        "Spotify player is starting...";
+
+      await startSpotifyPlayer();
+
+      await new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            1000
+          )
+      );
+
+    }
+
+
+    if (!spotifyDeviceId) {
+
+      status.textContent =
+        "Spotify player is not ready.";
+
+      return;
+
+    }
+
+
+    /*
+      Transfer playback to Relaxify
+    */
+
+    const transferResponse =
+      await fetch(
+        "https://api.spotify.com/v1/me/player",
+        {
+
+          method:
+            "PUT",
+
+          headers: {
+
+            Authorization:
+              `Bearer ${token}`,
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body:
+            JSON.stringify({
+
+              device_ids:
+                [spotifyDeviceId],
+
+              play:
+                true
+
+            })
+
+        }
+      );
+
+
+    if (
+      !transferResponse.ok &&
+      transferResponse.status !== 204
+    ) {
+
+      console.warn(
+        "Transfer response:",
+        transferResponse.status
+      );
+
+    }
+
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          500
+        )
+    );
+
+
+    /*
+      Start selected track
+    */
+
+    const playResponse =
+      await fetch(
+        "https://api.spotify.com/v1/me/player/play",
+        {
+
+          method:
+            "PUT",
+
+          headers: {
+
+            Authorization:
+              `Bearer ${token}`,
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body:
+            JSON.stringify({
+
+              device_id:
+                spotifyDeviceId,
+
+              uris:
+                [uri]
+
+            })
+
+        }
+      );
+
+
+    if (!playResponse.ok) {
+
+      throw new Error(
+        "Spotify could not start playback"
+      );
+
+    }
+
+
+    status.textContent =
+      "Playing on Relaxify";
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    status.textContent =
+      "Tap Play or open Spotify once.";
+
+  }
+
+}
+
+
+/* =========================================
+   PLAY / PAUSE
+========================================= */
+
+playButton.addEventListener(
+  "click",
+  async function () {
+
+    if (!spotifyPlayer) {
+
+      if (!accessToken) {
+
+        await loginSpotify();
+
+        return;
+
+      }
+
+
+      await startSpotifyPlayer();
+
+      return;
+
+    }
+
+
+    try {
+
+      await spotifyPlayer.togglePlay();
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+    }
+
+  }
+);
+
+
+/* =========================================
+   NEXT
+========================================= */
+
+nextButton.addEventListener(
+  "click",
+  async function () {
+
+    if (!spotifyPlayer) {
+      return;
+    }
+
+
+    await spotifyPlayer.nextTrack();
+
+  }
+);
+
+
+/* =========================================
+   PREVIOUS
+========================================= */
+
+previousButton.addEventListener(
+  "click",
+  async function () {
+
+    if (!spotifyPlayer) {
+      return;
+    }
+
+
+    await spotifyPlayer.previousTrack();
+
+  }
+);
+
+
+/* =========================================
+   SEEK
 ========================================= */
 
 progress.addEventListener(
   "input",
-  function () {
+  async function () {
 
-    if (!playerReady) {
+    if (!spotifyPlayer) {
       return;
     }
 
 
-    const total =
-      player.getDuration();
+    const state =
+      await spotifyPlayer.getCurrentState();
 
 
-    if (!total) {
+    if (!state) {
       return;
     }
 
 
-    player.seekTo(
-      total *
+    const position =
+      state.duration *
       Number(progress.value) /
-      100,
-      true
+      100;
+
+
+    await spotifyPlayer.seek(
+      position
     );
 
   }
@@ -697,71 +1290,55 @@ progress.addEventListener(
 
 
 /* =========================================
-   PROGRESS UPDATE
+   UPDATE SONG UI
 ========================================= */
 
-function startProgress() {
+function updateTrackUI(
+  track
+) {
 
-  stopProgress();
-
-
-  progressTimer =
-    setInterval(
-      function () {
-
-        if (!playerReady) {
-          return;
-        }
+  currentTrack =
+    track;
 
 
-        const total =
-          player.getDuration();
+  songTitle.textContent =
+    track.name;
 
 
-        const current =
-          player.getCurrentTime();
+  artistName.textContent =
+    track.artists
+      .map(
+        artist =>
+          artist.name
+      )
+      .join(", ");
 
 
-        if (
-          !total ||
-          !Number.isFinite(total)
-        ) {
-
-          return;
-
-        }
+  const image =
+    track.album
+      ?.images
+      ?.[0]
+      ?.url;
 
 
-        progress.value =
-          (
-            current /
-            total
-          ) * 100;
+  if (image) {
+
+    cover.style.backgroundImage =
+      `url("${image}")`;
 
 
-        currentTime.textContent =
-          formatTime(current);
+    const note =
+      cover.querySelector(
+        ".cover-note"
+      );
 
 
-        duration.textContent =
-          formatTime(total);
+    if (note) {
 
-      },
-      500
-    );
+      note.style.display =
+        "none";
 
-}
-
-
-function stopProgress() {
-
-  if (progressTimer) {
-
-    clearInterval(
-      progressTimer
-    );
-
-    progressTimer = null;
+    }
 
   }
 
@@ -769,7 +1346,7 @@ function stopProgress() {
 
 
 /* =========================================
-   TIME
+   FORMAT TIME
 ========================================= */
 
 function formatTime(
@@ -800,7 +1377,9 @@ function formatTime(
   return (
     minutes +
     ":" +
-    String(secs).padStart(
+    String(
+      secs
+    ).padStart(
       2,
       "0"
     )
@@ -810,23 +1389,13 @@ function formatTime(
 
 
 /* =========================================
-   CLEAN TEXT
+   START
 ========================================= */
 
-function cleanText(
-  text
-) {
+(async function () {
 
-  const textarea =
-    document.createElement(
-      "textarea"
-    );
+  loadSavedToken();
 
+  await handleCallback();
 
-  textarea.innerHTML =
-    String(text);
-
-
-  return textarea.value;
-
-}
+})();
