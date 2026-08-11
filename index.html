@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0,
+                 maximum-scale=1.0, user-scalable=no">
 
-  <meta name="theme-color" content="#080b14">
+  <meta name="theme-color" content="#080b12">
 
   <title>Relaxify — Indian Music</title>
 
@@ -15,131 +17,128 @@
 
   <main class="app">
 
+    <!-- BRAND -->
     <header class="topbar">
-
-      <a href="#" class="brand">
-        <span class="brand-icon">♪</span>
-        <span>Relaxify</span>
-      </a>
+      <div class="brand">Relaxify</div>
 
       <button
         id="voiceButton"
         class="voice-top"
         type="button"
-        title="Voice control"
-      >
-        🎙️
+        aria-label="Voice control">
+        🎙
       </button>
-
     </header>
 
 
+    <!-- PLAYER -->
     <section class="player-section">
 
-      <div class="cover" id="cover">
+      <div class="player-card">
 
-        <div class="cover-note">
-          ♪
+        <!-- SONG COVER -->
+        <div class="cover" id="cover">
+          <div class="cover-note">♪</div>
         </div>
 
-      </div>
+
+        <!-- SONG INFORMATION -->
+        <div class="song-info">
+
+          <h1 id="songTitle">
+            Relaxify
+          </h1>
+
+          <p id="artistName">
+            Indian music for quieter moments
+          </p>
+
+        </div>
 
 
-      <div class="song-info">
+        <!-- PROGRESS -->
+        <div class="progress-area">
 
-        <h1 id="songTitle">
-          Relaxify
-        </h1>
+          <span id="currentTime">0:00</span>
 
-        <p id="artistName">
-          Hindi music for quieter moments
+          <input
+            id="progress"
+            type="range"
+            min="0"
+            max="100"
+            value="0">
+
+          <span id="duration">0:00</span>
+
+        </div>
+
+
+        <!-- CONTROLS -->
+        <div class="controls">
+
+          <button
+            id="previousButton"
+            type="button"
+            aria-label="Previous">
+            ⏮
+          </button>
+
+          <button
+            id="playButton"
+            class="main-play"
+            type="button"
+            aria-label="Play">
+            ▶
+          </button>
+
+          <button
+            id="nextButton"
+            type="button"
+            aria-label="Next">
+            ⏭
+          </button>
+
+        </div>
+
+
+        <!-- VOLUME -->
+        <div class="volume">
+
+          <span>🔊</span>
+
+          <input
+            id="volume"
+            type="range"
+            min="0"
+            max="100"
+            value="80">
+
+        </div>
+
+
+        <!-- VOICE -->
+        <button
+          id="voiceControl"
+          class="voice-control"
+          type="button">
+
+          🎙
+          <span>Voice Control</span>
+
+        </button>
+
+        <p
+          id="voiceStatus"
+          class="voice-status">
+          Say “play”, “pause”, “next” or “previous”
         </p>
 
       </div>
 
-
-      <div class="progress-area">
-
-        <span id="currentTime">
-          0:00
-        </span>
-
-        <input
-          id="progress"
-          type="range"
-          min="0"
-          max="100"
-          value="0"
-        >
-
-        <span id="duration">
-          0:00
-        </span>
-
-      </div>
-
-
-      <div class="controls">
-
-        <button
-          id="previousButton"
-          type="button"
-          aria-label="Previous"
-        >
-          ⏮
-        </button>
-
-        <button
-          id="playButton"
-          class="main-play"
-          type="button"
-          aria-label="Play"
-        >
-          ▶
-        </button>
-
-        <button
-          id="nextButton"
-          type="button"
-          aria-label="Next"
-        >
-          ⏭
-        </button>
-
-      </div>
-
-
-      <div class="volume">
-
-        <span>🔊</span>
-
-        <input
-          id="volume"
-          type="range"
-          min="0"
-          max="100"
-          value="80"
-        >
-
-      </div>
-
-
-      <button
-        id="voiceControl"
-        class="voice-control"
-        type="button"
-      >
-        🎙️ <span>Voice Control</span>
-      </button>
-
-
-      <p id="voiceStatus" class="voice-status">
-        Tap the microphone and say “next”, “pause”, or “play”
-      </p>
-
     </section>
 
 
+    <!-- SEARCH — hidden from main screen -->
     <section class="search-section">
 
       <form id="searchForm">
@@ -147,9 +146,8 @@
         <input
           id="searchInput"
           type="search"
-          placeholder="Search Hindi music..."
-          autocomplete="off"
-        >
+          placeholder="Search Indian music..."
+          autocomplete="off">
 
         <button type="submit">
           Search
@@ -157,42 +155,38 @@
 
       </form>
 
-      <p id="status">
-        Ready
-      </p>
+      <p id="status">Ready</p>
 
-      <div
-        id="results"
-        class="results"
-      ></div>
+      <div id="results" class="results"></div>
 
     </section>
 
 
+    <!-- YOUTUBE PLAYER -->
     <section
       id="hiddenPlayer"
       class="youtube-wrapper"
-      aria-hidden="true"
-    >
+      aria-hidden="true">
 
       <div id="youtubePlayer"></div>
 
     </section>
 
 
+    <!-- FOOTER -->
     <footer>
 
-      <div>
-        <strong>Relaxify</strong>
-        <span>Made for quieter moments.</span>
-      </div>
+      <span>
+        Made with ♪ by Sakil
+      </span>
 
       <a
         href="https://instagram.com/sakil_miah_"
         target="_blank"
-        rel="noopener noreferrer"
-      >
+        rel="noopener noreferrer">
+
         @sakil_miah_
+
       </a>
 
     </footer>
