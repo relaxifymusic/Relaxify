@@ -1,5 +1,6 @@
 /* =========================================
-   RELAXIFY MUSIC ENGINE
+   RELAXIFY
+   SINGLE INDIAN SONG PLAYER
 ========================================= */
 
 const API_URL =
@@ -10,14 +11,17 @@ const API_URL =
    ELEMENTS
 ========================================= */
 
+const searchButton =
+  document.getElementById("searchButton");
+
+const searchPanel =
+  document.getElementById("searchPanel");
+
 const searchForm =
-  document.getElementById("searchForm");
+  document.getElementById("searchPanel");
 
 const searchInput =
   document.getElementById("searchInput");
-
-const results =
-  document.getElementById("results");
 
 const songTitle =
   document.getElementById("songTitle");
@@ -54,25 +58,45 @@ const youtubePlayer =
    STATE
 ========================================= */
 
-let queue = [];
-
-let currentIndex = -1;
-
 let player = null;
 
 let playerReady = false;
 
 let isPlaying = false;
 
+let currentSong = null;
+
+let previousSongs = [];
+
 let progressTimer = null;
 
 
 /* =========================================
-   DEFAULT INDIAN MUSIC SEARCH
+   DIFFERENT SEARCHES
+   Used to avoid getting the same song
 ========================================= */
 
-const DEFAULT_QUERY =
-  "latest trending new Hindi Indian songs 2026";
+const songQueries = [
+
+  "new Hindi songs 2026",
+
+  "latest Bollywood songs 2026",
+
+  "Hindi trending songs 2026",
+
+  "new Hindi romantic songs 2026",
+
+  "latest Indian songs 2026",
+
+  "Hindi hit songs 2026",
+
+  "new Bollywood music 2026",
+
+  "Hindi popular songs 2026"
+
+];
+
+let queryIndex = 0;
 
 
 /* =========================================
@@ -167,7 +191,7 @@ window.onYouTubeIframeAPIReady =
 
                   isPlaying = false;
 
-                  playNext();
+                  playNewIndianSong();
 
                 }
 
@@ -182,7 +206,7 @@ window.onYouTubeIframeAPIReady =
 
 
 /* =========================================
-   FIRST PLAY
+   PLAY BUTTON
 ========================================= */
 
 playButton.addEventListener(
@@ -193,13 +217,15 @@ playButton.addEventListener(
       return;
     }
 
-    if (currentIndex === -1) {
 
-      loadDefaultSongs();
+    if (!currentSong) {
+
+      playNewIndianSong();
 
       return;
 
     }
+
 
     if (isPlaying) {
 
@@ -216,42 +242,43 @@ playButton.addEventListener(
 
 
 /* =========================================
-   LOAD DEFAULT SONGS
+   NEXT
 ========================================= */
 
-async function loadDefaultSongs() {
+nextButton.addEventListener(
+  "click",
+  function () {
 
-  await searchSongs(
-    DEFAULT_QUERY,
-    true
-  );
+    playNewIndianSong();
 
-}
+  }
+);
 
 
 /* =========================================
-   SEARCH FORM
+   PREVIOUS
 ========================================= */
 
-searchForm.addEventListener(
-  "submit",
-  function (event) {
+previousButton.addEventListener(
+  "click",
+  function () {
 
-    event.preventDefault();
-
-    const query =
-      searchInput.value.trim();
-
-    if (!query) {
-
-      searchInput.focus();
-
+    if (!previousSongs.length) {
       return;
-
     }
 
-    searchSongs(
-      query,
+
+    const oldSong =
+      previousSongs.pop();
+
+
+    if (!oldSong) {
+      return;
+    }
+
+
+    playSong(
+      oldSong,
       false
     );
 
@@ -260,22 +287,24 @@ searchForm.addEventListener(
 
 
 /* =========================================
-   SEARCH SONGS
+   GET NEW SONG
 ========================================= */
 
-async function searchSongs(
-  query,
-  autoplay
-) {
+async function playNewIndianSong() {
 
-  results.innerHTML =
-    `<div style="
-      padding:10px;
-      font-size:11px;
-      color:rgba(255,255,255,.6);
-    ">
-      Searching...
-    </div>`;
+  if (!playerReady) {
+    return;
+  }
+
+
+  const query =
+    songQueries[
+      queryIndex %
+      songQueries.length
+    ];
+
+
+  queryIndex++;
 
 
   try {
@@ -293,7 +322,7 @@ async function searchSongs(
     if (!response.ok) {
 
       throw new Error(
-        `HTTP ${response.status}`
+        "Search failed"
       );
 
     }
@@ -321,167 +350,46 @@ async function searchSongs(
 
     if (!items.length) {
 
-      results.innerHTML =
-        `<div style="
-          padding:10px;
-          font-size:11px;
-          color:rgba(255,255,255,.6);
-        ">
-          No songs found.
-        </div>`;
-
       return;
 
     }
 
 
-    queue = items;
+    /*
+      Pick a random result so that
+      every Next doesn't always play
+      the first result.
+    */
 
-    currentIndex = -1;
+    const randomIndex =
+      Math.floor(
+        Math.random() *
+        Math.min(
+          items.length,
+          10
+        )
+      );
 
 
-    renderResults(
-      items
+    const song =
+      items[randomIndex];
+
+
+    playSong(
+      song,
+      true
     );
-
-
-    if (autoplay) {
-
-      playSong(0);
-
-    }
 
   }
 
   catch (error) {
 
     console.error(
-      "Relaxify search error:",
+      "Relaxify:",
       error
     );
 
-
-    results.innerHTML =
-      `<div style="
-        padding:10px;
-        font-size:11px;
-        color:rgba(255,255,255,.6);
-      ">
-        Search unavailable. Try again.
-      </div>`;
-
   }
-
-}
-
-
-/* =========================================
-   RENDER SEARCH RESULTS
-========================================= */
-
-function renderResults(
-  items
-) {
-
-  results.innerHTML = "";
-
-
-  items.slice(0, 8).forEach(
-    function (item, index) {
-
-      const snippet =
-        item.snippet || {};
-
-
-      const videoId =
-        item?.id?.videoId;
-
-
-      if (!videoId) {
-        return;
-      }
-
-
-      const title =
-        cleanText(
-          snippet.title ||
-          "Indian Song"
-        );
-
-
-      const channel =
-        cleanText(
-          snippet.channelTitle ||
-          "YouTube"
-        );
-
-
-      const thumbnail =
-        snippet?.thumbnails?.medium?.url ||
-        snippet?.thumbnails?.default?.url ||
-        "";
-
-
-      const card =
-        document.createElement(
-          "div"
-        );
-
-
-      card.className =
-        "result-card";
-
-
-      card.innerHTML = `
-
-        <img
-          class="result-thumb"
-          src="${thumbnail}"
-          alt=""
-        >
-
-        <div class="result-info">
-
-          <div class="result-title">
-            ${escapeHTML(title)}
-          </div>
-
-          <div class="result-channel">
-            ${escapeHTML(channel)}
-          </div>
-
-        </div>
-
-        <button
-          class="result-play"
-          type="button"
-        >
-          ▶
-        </button>
-
-      `;
-
-
-      card
-        .querySelector(
-          ".result-play"
-        )
-        .addEventListener(
-          "click",
-          function () {
-
-            playSong(index);
-
-          }
-        );
-
-
-      results.appendChild(
-        card
-      );
-
-    }
-  );
 
 }
 
@@ -491,30 +399,12 @@ function renderResults(
 ========================================= */
 
 function playSong(
-  index
+  song,
+  savePrevious
 ) {
 
-  if (
-    !queue.length ||
-    index < 0 ||
-    index >= queue.length
-  ) {
-
-    return;
-
-  }
-
-
-  const item =
-    queue[index];
-
-
   const videoId =
-    item?.id?.videoId;
-
-
-  const snippet =
-    item?.snippet || {};
+    song?.id?.videoId;
 
 
   if (!videoId) {
@@ -522,21 +412,50 @@ function playSong(
   }
 
 
-  currentIndex =
-    index;
+  if (
+    savePrevious &&
+    currentSong
+  ) {
+
+    previousSongs.push(
+      currentSong
+    );
+
+
+    /*
+      Keep only recent songs.
+    */
+
+    if (
+      previousSongs.length > 10
+    ) {
+
+      previousSongs.shift();
+
+    }
+
+  }
+
+
+  currentSong =
+    song;
+
+
+  const snippet =
+    song.snippet || {};
 
 
   songTitle.textContent =
     cleanText(
       snippet.title ||
-      "Indian Music"
+      "Hindi Song"
     );
 
 
   artistName.textContent =
     cleanText(
       snippet.channelTitle ||
-      "YouTube"
+      "Indian Music"
     );
 
 
@@ -552,22 +471,30 @@ function playSong(
     cover.style.backgroundImage =
       `url("${thumbnail}")`;
 
+
     const note =
       cover.querySelector(
         ".cover-note"
       );
 
+
     if (note) {
+
       note.style.display =
         "none";
+
     }
 
   }
 
 
-  if (!playerReady) {
-    return;
-  }
+  progress.value = 0;
+
+  currentTime.textContent =
+    "0:00";
+
+  duration.textContent =
+    "0:00";
 
 
   player.loadVideoById(
@@ -582,89 +509,158 @@ function playSong(
 
 
 /* =========================================
-   NEXT SONG
+   SEARCH BUTTON
 ========================================= */
 
-nextButton.addEventListener(
+searchButton.addEventListener(
   "click",
   function () {
 
-    playNext();
+    searchPanel.classList.toggle(
+      "open"
+    );
+
+
+    if (
+      searchPanel.classList.contains(
+        "open"
+      )
+    ) {
+
+      setTimeout(
+        function () {
+
+          searchInput.focus();
+
+        },
+        100
+      );
+
+    }
 
   }
 );
 
 
-function playNext() {
-
-  if (!queue.length) {
-
-    loadDefaultSongs();
-
-    return;
-
-  }
-
-
-  let nextIndex =
-    currentIndex + 1;
-
-
-  if (
-    nextIndex >= queue.length
-  ) {
-
-    /*
-      Queue khatam hone par
-      naye trending songs load
-      honge.
-    */
-
-    loadDefaultSongs();
-
-    return;
-
-  }
-
-
-  playSong(
-    nextIndex
-  );
-
-}
-
-
 /* =========================================
-   PREVIOUS SONG
+   SEARCH
 ========================================= */
 
-previousButton.addEventListener(
-  "click",
-  function () {
+searchForm.addEventListener(
+  "submit",
+  async function (event) {
 
-    if (!queue.length) {
+    event.preventDefault();
+
+
+    const query =
+      searchInput.value.trim();
+
+
+    if (!query) {
       return;
     }
 
 
-    let previousIndex =
-      currentIndex - 1;
+    searchPanel.classList.remove(
+      "open"
+    );
 
 
-    if (previousIndex < 0) {
-
-      previousIndex =
-        queue.length - 1;
-
-    }
-
-
-    playSong(
-      previousIndex
+    await searchAndPlay(
+      query
     );
 
   }
 );
+
+
+/* =========================================
+   SEARCH AND DIRECTLY PLAY ONE SONG
+========================================= */
+
+async function searchAndPlay(
+  query
+) {
+
+  try {
+
+    const finalQuery =
+      `${query} Hindi Indian song`;
+
+
+    const url =
+      `${API_URL}/search?q=${
+        encodeURIComponent(
+          finalQuery
+        )
+      }`;
+
+
+    const response =
+      await fetch(url);
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "Search failed"
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    const items =
+      Array.isArray(data.items)
+        ? data.items.filter(
+            function (item) {
+
+              return Boolean(
+                item &&
+                item.id &&
+                item.id.videoId
+              );
+
+            }
+          )
+        : [];
+
+
+    if (!items.length) {
+      return;
+    }
+
+
+    /*
+      Search result list show nahi hogi.
+      Directly ek song play hoga.
+    */
+
+    const song =
+      items[0];
+
+
+    playSong(
+      song,
+      true
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Search error:",
+      error
+    );
+
+  }
+
+}
 
 
 /* =========================================
@@ -689,15 +685,9 @@ progress.addEventListener(
     }
 
 
-    const percentage =
-      Number(
-        progress.value
-      );
-
-
     player.seekTo(
       total *
-      percentage /
+      Number(progress.value) /
       100,
       true
     );
@@ -750,15 +740,11 @@ function startProgress() {
 
 
         currentTime.textContent =
-          formatTime(
-            current
-          );
+          formatTime(current);
 
 
         duration.textContent =
-          formatTime(
-            total
-          );
+          formatTime(total);
 
       },
       500
@@ -783,7 +769,7 @@ function stopProgress() {
 
 
 /* =========================================
-   FORMAT TIME
+   TIME
 ========================================= */
 
 function formatTime(
@@ -791,9 +777,7 @@ function formatTime(
 ) {
 
   if (
-    !Number.isFinite(
-      seconds
-    )
+    !Number.isFinite(seconds)
   ) {
 
     return "0:00";
@@ -807,7 +791,7 @@ function formatTime(
     );
 
 
-  const secondsPart =
+  const secs =
     Math.floor(
       seconds % 60
     );
@@ -816,9 +800,7 @@ function formatTime(
   return (
     minutes +
     ":" +
-    String(
-      secondsPart
-    ).padStart(
+    String(secs).padStart(
       2,
       "0"
     )
@@ -828,36 +810,8 @@ function formatTime(
 
 
 /* =========================================
-   SECURITY
+   CLEAN TEXT
 ========================================= */
-
-function escapeHTML(
-  text
-) {
-
-  return String(text).replace(
-    /[&<>"']/g,
-    function (character) {
-
-      const entities = {
-
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-
-      };
-
-      return entities[
-        character
-      ];
-
-    }
-  );
-
-}
-
 
 function cleanText(
   text
@@ -868,8 +822,10 @@ function cleanText(
       "textarea"
     );
 
+
   textarea.innerHTML =
     String(text);
+
 
   return textarea.value;
 
