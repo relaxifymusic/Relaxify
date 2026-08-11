@@ -1,100 +1,668 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0,
-                 maximum-scale=1.0, user-scalable=no">
 
-  <meta name="theme-color" content="#080b12">
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#05070c"
+  >
 
   <title>Relaxify — Indian Music</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background: #05070c;
+      color: white;
+    }
+
+    /* =================================
+       BACKGROUND
+    ================================= */
+
+    .background {
+      position: fixed;
+      inset: 0;
+
+      background-image:
+        linear-gradient(
+          rgba(0,0,0,0.42),
+          rgba(0,0,0,0.68)
+        ),
+        url("https://unsplash.com/photos/photography-of-lightning-storm-in9-n0JwgZ0/download?force=true&w=1920");
+
+      background-size: cover;
+      background-position: center;
+
+      filter: saturate(0.9);
+
+      z-index: -2;
+    }
+
+    .background::after {
+      content: "";
+
+      position: absolute;
+      inset: 0;
+
+      background:
+        radial-gradient(
+          circle at 50% 35%,
+          rgba(255,255,255,0.08),
+          transparent 40%
+        ),
+        linear-gradient(
+          to bottom,
+          rgba(0,0,0,0.1),
+          rgba(0,0,0,0.75)
+        );
+    }
+
+
+    /* =================================
+       APP
+    ================================= */
+
+    .app {
+      width: 100%;
+      height: 100dvh;
+
+      padding:
+        28px
+        24px
+        24px;
+
+      display: flex;
+      flex-direction: column;
+
+      overflow: hidden;
+    }
+
+
+    /* =================================
+       TOP
+    ================================= */
+
+    .topbar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      flex-shrink: 0;
+    }
+
+    .brand {
+      text-decoration: none;
+      color: white;
+
+      font-family:
+        "Playfair Display",
+        serif;
+
+      font-size: clamp(
+        42px,
+        11vw,
+        76px
+      );
+
+      font-weight: 800;
+
+      letter-spacing: -2px;
+
+      text-shadow:
+        0 4px 30px
+        rgba(0,0,0,0.6);
+    }
+
+    .brand span:first-child {
+      display: none;
+    }
+
+
+    /* =================================
+       MAIN
+    ================================= */
+
+    .player-section {
+      flex: 1;
+
+      min-height: 0;
+
+      display: flex;
+      flex-direction: column;
+
+      justify-content: flex-end;
+
+      padding-bottom: 20px;
+    }
+
+
+    /* =================================
+       SONG COVER
+    ================================= */
+
+    .cover {
+      width: 105px;
+      height: 105px;
+
+      margin: 0 auto 12px;
+
+      border-radius: 20px;
+
+      background:
+        linear-gradient(
+          135deg,
+          rgba(255,255,255,0.18),
+          rgba(255,255,255,0.04)
+        );
+
+      background-size: cover;
+      background-position: center;
+
+      border:
+        1px solid
+        rgba(255,255,255,0.2);
+
+      box-shadow:
+        0 15px 50px
+        rgba(0,0,0,0.55);
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      overflow: hidden;
+    }
+
+    .cover-note {
+      font-size: 42px;
+      opacity: 0.8;
+    }
+
+
+    /* =================================
+       SONG INFO
+    ================================= */
+
+    .song-info {
+      text-align: center;
+
+      margin-bottom: 15px;
+    }
+
+    .song-info h1 {
+      font-size: 19px;
+      font-weight: 700;
+
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      max-width: 90vw;
+
+      margin: auto;
+    }
+
+    .song-info p {
+      margin-top: 4px;
+
+      font-size: 13px;
+
+      color:
+        rgba(255,255,255,0.68);
+    }
+
+
+    /* =================================
+       GLASS PLAYER
+    ================================= */
+
+    .glass-player {
+
+      width: min(
+        560px,
+        100%
+      );
+
+      margin: 0 auto;
+
+      padding:
+        18px
+        20px
+        16px;
+
+      border-radius: 28px;
+
+      background:
+        rgba(20,20,25,0.58);
+
+      border:
+        1px solid
+        rgba(255,255,255,0.16);
+
+      backdrop-filter:
+        blur(25px);
+
+      -webkit-backdrop-filter:
+        blur(25px);
+
+      box-shadow:
+        0 20px 60px
+        rgba(0,0,0,0.55);
+    }
+
+
+    /* =================================
+       PROGRESS
+    ================================= */
+
+    .progress-area {
+
+      display: grid;
+
+      grid-template-columns:
+        38px 1fr 38px;
+
+      align-items: center;
+
+      gap: 8px;
+    }
+
+    .progress-area span {
+
+      font-size: 11px;
+
+      color:
+        rgba(255,255,255,0.65);
+    }
+
+    #duration {
+      text-align: right;
+    }
+
+    input[type="range"] {
+
+      width: 100%;
+
+      accent-color: white;
+
+      cursor: pointer;
+    }
+
+
+    /* =================================
+       CONTROLS
+    ================================= */
+
+    .controls {
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      gap: 30px;
+
+      margin-top: 12px;
+    }
+
+    .controls button {
+
+      border: none;
+
+      background: transparent;
+
+      color: white;
+
+      font-size: 23px;
+
+      cursor: pointer;
+
+      width: 42px;
+      height: 42px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .controls .main-play {
+
+      width: 58px;
+      height: 58px;
+
+      border-radius: 50%;
+
+      background: white;
+
+      color: #111;
+
+      font-size: 21px;
+
+      box-shadow:
+        0 8px 25px
+        rgba(0,0,0,0.35);
+    }
+
+    .controls button:active {
+      transform: scale(0.92);
+    }
+
+
+    /* =================================
+       VOLUME
+    ================================= */
+
+    .volume {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 9px;
+
+      margin-top: 7px;
+    }
+
+    .volume span {
+      font-size: 14px;
+    }
+
+
+    /* =================================
+       VOICE
+    ================================= */
+
+    .voice-control {
+
+      width: 100%;
+
+      margin-top: 11px;
+
+      padding: 9px;
+
+      border-radius: 14px;
+
+      border:
+        1px solid
+        rgba(255,255,255,0.15);
+
+      background:
+        rgba(255,255,255,0.08);
+
+      color: white;
+
+      font-size: 13px;
+
+      cursor: pointer;
+    }
+
+    .voice-status {
+
+      text-align: center;
+
+      margin-top: 7px;
+
+      font-size: 11px;
+
+      color:
+        rgba(255,255,255,0.55);
+    }
+
+
+    /* =================================
+       SEARCH
+    ================================= */
+
+    .search-section {
+      display: none;
+    }
+
+
+    /* =================================
+       HIDDEN YOUTUBE
+    ================================= */
+
+    .youtube-wrapper {
+
+      position: fixed;
+
+      width: 1px;
+      height: 1px;
+
+      left: -9999px;
+      top: -9999px;
+
+      overflow: hidden;
+    }
+
+
+    /* =================================
+       FOOTER
+    ================================= */
+
+    footer {
+
+      flex-shrink: 0;
+
+      width: 100%;
+
+      display: flex;
+
+      justify-content:
+        space-between;
+
+      align-items: center;
+
+      margin-top: 12px;
+
+      color:
+        rgba(255,255,255,0.6);
+
+      font-size: 11px;
+    }
+
+    footer strong {
+      color: white;
+    }
+
+    footer a {
+      color: white;
+      text-decoration: none;
+    }
+
+
+    /* =================================
+       SMALL PHONES
+    ================================= */
+
+    @media (max-height: 700px) {
+
+      .app {
+        padding:
+          16px
+          18px
+          14px;
+      }
+
+      .brand {
+        font-size: 43px;
+      }
+
+      .cover {
+        width: 75px;
+        height: 75px;
+        margin-bottom: 8px;
+      }
+
+      .cover-note {
+        font-size: 30px;
+      }
+
+      .song-info {
+        margin-bottom: 8px;
+      }
+
+      .glass-player {
+        padding:
+          13px
+          15px
+          11px;
+      }
+
+      .controls {
+        margin-top: 7px;
+      }
+
+      .controls .main-play {
+        width: 50px;
+        height: 50px;
+      }
+
+      footer {
+        display: none;
+      }
+    }
+
+  </style>
+
 </head>
+
 
 <body>
 
+  <div class="background"></div>
+
+
   <main class="app">
 
-    <!-- BRAND -->
-    <header class="topbar">
-      <div class="brand">Relaxify</div>
 
-      <button
-        id="voiceButton"
-        class="voice-top"
-        type="button"
-        aria-label="Voice control">
-        🎙
-      </button>
+    <!-- =============================
+         HEADER
+    ============================== -->
+
+    <header class="topbar">
+
+      <a
+        href="#"
+        class="brand"
+      >
+        Relaxify
+      </a>
+
     </header>
 
 
-    <!-- PLAYER -->
+    <!-- =============================
+         PLAYER
+    ============================== -->
+
     <section class="player-section">
 
-      <div class="player-card">
 
-        <!-- SONG COVER -->
-        <div class="cover" id="cover">
-          <div class="cover-note">♪</div>
+      <div
+        class="cover"
+        id="cover"
+      >
+
+        <div class="cover-note">
+          ♪
         </div>
 
+      </div>
 
-        <!-- SONG INFORMATION -->
-        <div class="song-info">
 
-          <h1 id="songTitle">
-            Relaxify
-          </h1>
+      <div class="song-info">
 
-          <p id="artistName">
-            Indian music for quieter moments
-          </p>
+        <h1 id="songTitle">
+          Relaxify
+        </h1>
 
-        </div>
+        <p id="artistName">
+          Indian music for quieter moments
+        </p>
+
+      </div>
+
+
+      <div class="glass-player">
 
 
         <!-- PROGRESS -->
+
         <div class="progress-area">
 
-          <span id="currentTime">0:00</span>
+          <span id="currentTime">
+            0:00
+          </span>
 
           <input
             id="progress"
             type="range"
             min="0"
             max="100"
-            value="0">
+            value="0"
+          >
 
-          <span id="duration">0:00</span>
+          <span id="duration">
+            0:00
+          </span>
 
         </div>
 
 
         <!-- CONTROLS -->
+
         <div class="controls">
 
           <button
             id="previousButton"
             type="button"
-            aria-label="Previous">
+          >
             ⏮
           </button>
+
 
           <button
             id="playButton"
             class="main-play"
             type="button"
-            aria-label="Play">
+          >
             ▶
           </button>
+
 
           <button
             id="nextButton"
             type="button"
-            aria-label="Next">
+          >
             ⏭
           </button>
 
@@ -102,43 +670,52 @@
 
 
         <!-- VOLUME -->
+
         <div class="volume">
 
-          <span>🔊</span>
+          <span>
+            🔊
+          </span>
 
           <input
             id="volume"
             type="range"
             min="0"
             max="100"
-            value="80">
+            value="80"
+          >
 
         </div>
 
 
         <!-- VOICE -->
+
         <button
           id="voiceControl"
           class="voice-control"
-          type="button">
-
-          🎙
-          <span>Voice Control</span>
-
+          type="button"
+        >
+          🎙️ Voice Control
         </button>
+
 
         <p
           id="voiceStatus"
-          class="voice-status">
+          class="voice-status"
+        >
           Say “play”, “pause”, “next” or “previous”
         </p>
+
 
       </div>
 
     </section>
 
 
-    <!-- SEARCH — hidden from main screen -->
+    <!-- =============================
+         SEARCH — HIDDEN
+    ============================== -->
+
     <section class="search-section">
 
       <form id="searchForm">
@@ -146,8 +723,7 @@
         <input
           id="searchInput"
           type="search"
-          placeholder="Search Indian music..."
-          autocomplete="off">
+        >
 
         <button type="submit">
           Search
@@ -155,46 +731,813 @@
 
       </form>
 
-      <p id="status">Ready</p>
+      <p id="status">
+        Ready
+      </p>
 
-      <div id="results" class="results"></div>
+      <div id="results"></div>
 
     </section>
 
 
     <!-- YOUTUBE PLAYER -->
-    <section
-      id="hiddenPlayer"
+
+    <div
+      id="youtubePlayer"
       class="youtube-wrapper"
-      aria-hidden="true">
-
-      <div id="youtubePlayer"></div>
-
-    </section>
+    ></div>
 
 
     <!-- FOOTER -->
+
     <footer>
 
-      <span>
-        Made with ♪ by Sakil
-      </span>
+      <div>
+
+        <strong>
+          Relaxify
+        </strong>
+
+        <span>
+          • Made for quieter moments
+        </span>
+
+      </div>
 
       <a
         href="https://instagram.com/sakil_miah_"
         target="_blank"
-        rel="noopener noreferrer">
-
+        rel="noopener noreferrer"
+      >
         @sakil_miah_
-
       </a>
 
     </footer>
 
+
   </main>
 
 
-  <script src="script.js"></script>
+  <script>
+
+    /* =========================================
+       RELAXIFY PLAYER
+    ========================================= */
+
+    const API_URL =
+      "https://relaxify-api.djboy4696.workers.dev";
+
+
+    const searchForm =
+      document.getElementById("searchForm");
+
+    const searchInput =
+      document.getElementById("searchInput");
+
+    const results =
+      document.getElementById("results");
+
+    const status =
+      document.getElementById("status");
+
+    const songTitle =
+      document.getElementById("songTitle");
+
+    const artistName =
+      document.getElementById("artistName");
+
+    const cover =
+      document.getElementById("cover");
+
+    const playButton =
+      document.getElementById("playButton");
+
+    const previousButton =
+      document.getElementById("previousButton");
+
+    const nextButton =
+      document.getElementById("nextButton");
+
+    const progress =
+      document.getElementById("progress");
+
+    const volume =
+      document.getElementById("volume");
+
+    const currentTime =
+      document.getElementById("currentTime");
+
+    const duration =
+      document.getElementById("duration");
+
+    const voiceControl =
+      document.getElementById("voiceControl");
+
+    const voiceStatus =
+      document.getElementById("voiceStatus");
+
+    const youtubePlayer =
+      document.getElementById("youtubePlayer");
+
+
+    let queue = [];
+
+    let currentIndex = -1;
+
+    let player = null;
+
+    let playerReady = false;
+
+    let isPlaying = false;
+
+    let progressTimer = null;
+
+
+    /* =========================================
+       LOAD YOUTUBE
+    ========================================= */
+
+    const tag =
+      document.createElement("script");
+
+    tag.src =
+      "https://www.youtube.com/iframe_api";
+
+    document.head.appendChild(tag);
+
+
+    window.onYouTubeIframeAPIReady =
+      function () {
+
+        player =
+          new YT.Player(
+            youtubePlayer,
+            {
+
+              height: "1",
+              width: "1",
+
+              playerVars: {
+                playsinline: 1,
+                controls: 0,
+                rel: 0,
+                modestbranding: 1
+              },
+
+              events: {
+
+                onReady: function () {
+
+                  playerReady = true;
+
+                  player.setVolume(
+                    Number(volume.value)
+                  );
+
+                },
+
+                onStateChange:
+                  function (event) {
+
+                    if (
+                      event.data ===
+                      YT.PlayerState.PLAYING
+                    ) {
+
+                      isPlaying = true;
+
+                      playButton.textContent =
+                        "❚❚";
+
+                      startProgress();
+
+                    }
+
+
+                    if (
+                      event.data ===
+                      YT.PlayerState.PAUSED
+                    ) {
+
+                      isPlaying = false;
+
+                      playButton.textContent =
+                        "▶";
+
+                      stopProgress();
+
+                    }
+
+
+                    if (
+                      event.data ===
+                      YT.PlayerState.ENDED
+                    ) {
+
+                      playNext();
+
+                    }
+
+                  }
+
+              }
+
+            }
+          );
+
+      };
+
+
+    /* =========================================
+       SEARCH
+    ========================================= */
+
+    async function searchIndianMusic(query) {
+
+      try {
+
+        status.textContent =
+          "Finding Indian music...";
+
+
+        const finalQuery =
+          `${query} Hindi Indian song`;
+
+
+        const url =
+          `${API_URL}/search?q=${
+            encodeURIComponent(
+              finalQuery
+            )
+          }`;
+
+
+        const response =
+          await fetch(url);
+
+
+        if (!response.ok) {
+          throw new Error("Search failed");
+        }
+
+
+        const data =
+          await response.json();
+
+
+        const items =
+          Array.isArray(data.items)
+            ? data.items.filter(
+                item =>
+                  item &&
+                  item.id &&
+                  item.id.videoId
+              )
+            : [];
+
+
+        if (!items.length) {
+
+          status.textContent =
+            "No songs found";
+
+          return;
+
+        }
+
+
+        queue = items;
+
+        playSong(0);
+
+      }
+
+      catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+          "Music service unavailable";
+
+      }
+
+    }
+
+
+    /* =========================================
+       PLAY SONG
+    ========================================= */
+
+    function playSong(index) {
+
+      if (
+        !queue.length ||
+        index < 0 ||
+        index >= queue.length
+      ) {
+        return;
+      }
+
+
+      const item =
+        queue[index];
+
+      const videoId =
+        item?.id?.videoId;
+
+      const snippet =
+        item?.snippet || {};
+
+
+      if (!videoId) {
+        return;
+      }
+
+
+      currentIndex = index;
+
+
+      songTitle.textContent =
+        cleanText(
+          snippet.title ||
+          "Indian Music"
+        );
+
+
+      artistName.textContent =
+        cleanText(
+          snippet.channelTitle ||
+          "YouTube"
+        );
+
+
+      const thumbnail =
+        snippet?.thumbnails?.high?.url ||
+        snippet?.thumbnails?.medium?.url ||
+        snippet?.thumbnails?.default?.url;
+
+
+      if (thumbnail) {
+
+        cover.style.backgroundImage =
+          `url("${thumbnail}")`;
+
+        cover
+          .querySelector(".cover-note")
+          .style.display =
+          "none";
+
+      }
+
+
+      if (!playerReady) {
+
+        status.textContent =
+          "Player loading...";
+
+        return;
+
+      }
+
+
+      player.loadVideoById(videoId);
+
+      player.setVolume(
+        Number(volume.value)
+      );
+
+      status.textContent =
+        "Playing Indian music";
+
+    }
+
+
+    /* =========================================
+       PLAY / PAUSE
+    ========================================= */
+
+    playButton.addEventListener(
+      "click",
+      function () {
+
+        if (!playerReady) {
+
+          status.textContent =
+            "Player loading...";
+
+          return;
+
+        }
+
+
+        if (currentIndex === -1) {
+
+          searchIndianMusic(
+            "latest trending romantic Hindi songs"
+          );
+
+          return;
+
+        }
+
+
+        if (isPlaying) {
+
+          player.pauseVideo();
+
+        }
+        else {
+
+          player.playVideo();
+
+        }
+
+      }
+    );
+
+
+    /* =========================================
+       NEXT
+    ========================================= */
+
+    nextButton.addEventListener(
+      "click",
+      playNext
+    );
+
+
+    function playNext() {
+
+      if (!queue.length) {
+
+        searchIndianMusic(
+          "latest trending romantic Hindi songs"
+        );
+
+        return;
+
+      }
+
+
+      let index =
+        currentIndex + 1;
+
+
+      if (
+        index >= queue.length
+      ) {
+        index = 0;
+      }
+
+
+      playSong(index);
+
+    }
+
+
+    /* =========================================
+       PREVIOUS
+    ========================================= */
+
+    previousButton.addEventListener(
+      "click",
+      function () {
+
+        if (!queue.length) {
+          return;
+        }
+
+
+        let index =
+          currentIndex - 1;
+
+
+        if (index < 0) {
+          index = queue.length - 1;
+        }
+
+
+        playSong(index);
+
+      }
+    );
+
+
+    /* =========================================
+       VOLUME
+    ========================================= */
+
+    volume.addEventListener(
+      "input",
+      function () {
+
+        if (playerReady) {
+
+          player.setVolume(
+            Number(volume.value)
+          );
+
+        }
+
+      }
+    );
+
+
+    /* =========================================
+       PROGRESS
+    ========================================= */
+
+    progress.addEventListener(
+      "input",
+      function () {
+
+        if (!playerReady) {
+          return;
+        }
+
+
+        const total =
+          player.getDuration();
+
+
+        if (!total) {
+          return;
+        }
+
+
+        player.seekTo(
+          total *
+          Number(progress.value) /
+          100,
+          true
+        );
+
+      }
+    );
+
+
+    function startProgress() {
+
+      stopProgress();
+
+
+      progressTimer =
+        setInterval(
+          function () {
+
+            if (!playerReady) {
+              return;
+            }
+
+
+            const total =
+              player.getDuration();
+
+            const current =
+              player.getCurrentTime();
+
+
+            if (!total) {
+              return;
+            }
+
+
+            progress.value =
+              current /
+              total *
+              100;
+
+
+            currentTime.textContent =
+              formatTime(current);
+
+
+            duration.textContent =
+              formatTime(total);
+
+          },
+          500
+        );
+
+    }
+
+
+    function stopProgress() {
+
+      if (progressTimer) {
+
+        clearInterval(
+          progressTimer
+        );
+
+        progressTimer = null;
+
+      }
+
+    }
+
+
+    /* =========================================
+       VOICE CONTROL
+    ========================================= */
+
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+
+    let recognition = null;
+
+
+    if (SpeechRecognition) {
+
+      recognition =
+        new SpeechRecognition();
+
+
+      recognition.lang =
+        "en-IN";
+
+      recognition.continuous =
+        false;
+
+      recognition.interimResults =
+        false;
+
+
+      recognition.onstart =
+        function () {
+
+          voiceStatus.textContent =
+            "Listening...";
+
+        };
+
+
+      recognition.onresult =
+        function (event) {
+
+          const command =
+            event.results[0][0]
+              .transcript
+              .toLowerCase()
+              .trim();
+
+
+          voiceStatus.textContent =
+            `Heard: "${command}"`;
+
+
+          if (
+            command.includes("pause")
+          ) {
+
+            if (playerReady)
+              player.pauseVideo();
+
+            return;
+
+          }
+
+
+          if (
+            command.includes("play") ||
+            command.includes("resume")
+          ) {
+
+            if (
+              currentIndex === -1
+            ) {
+
+              searchIndianMusic(
+                "latest trending romantic Hindi songs"
+              );
+
+            }
+            else {
+
+              player.playVideo();
+
+            }
+
+            return;
+
+          }
+
+
+          if (
+            command.includes("next") ||
+            command.includes("skip")
+          ) {
+
+            playNext();
+
+            return;
+
+          }
+
+
+          if (
+            command.includes("previous") ||
+            command.includes("back")
+          ) {
+
+            previousButton.click();
+
+            return;
+
+          }
+
+
+          voiceStatus.textContent =
+            "Try: play, pause, next or previous";
+
+        };
+
+    }
+
+
+    voiceControl.addEventListener(
+      "click",
+      function () {
+
+        if (!recognition) {
+
+          voiceStatus.textContent =
+            "Voice control is not supported.";
+
+          return;
+
+        }
+
+
+        try {
+
+          recognition.start();
+
+        }
+        catch (error) {
+
+          console.log(error);
+
+        }
+
+      }
+    );
+
+
+    /* =========================================
+       HELPERS
+    ========================================= */
+
+    function formatTime(seconds) {
+
+      if (
+        !Number.isFinite(seconds)
+      ) {
+        return "0:00";
+      }
+
+
+      const minutes =
+        Math.floor(
+          seconds / 60
+        );
+
+
+      const secondsPart =
+        Math.floor(
+          seconds % 60
+        );
+
+
+      return (
+        minutes +
+        ":" +
+        String(
+          secondsPart
+        ).padStart(2, "0")
+      );
+
+    }
+
+
+    function cleanText(text) {
+
+      const textarea =
+        document.createElement(
+          "textarea"
+        );
+
+      textarea.innerHTML =
+        String(text);
+
+      return textarea.value;
+
+    }
+
+  </script>
 
 </body>
+
 </html>
