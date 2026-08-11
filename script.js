@@ -1,5 +1,5 @@
 /* =========================================
-   RELAXIFY — INDIAN TRENDING MUSIC PLAYER
+   RELAXIFY MUSIC ENGINE
 ========================================= */
 
 const API_URL =
@@ -10,29 +10,41 @@ const API_URL =
    ELEMENTS
 ========================================= */
 
-const songTitle = document.getElementById("songTitle");
-const artistName = document.getElementById("artistName");
-const cover = document.getElementById("cover");
+const searchForm =
+  document.getElementById("searchForm");
 
-const playButton = document.getElementById("playButton");
-const previousButton = document.getElementById("previousButton");
-const nextButton = document.getElementById("nextButton");
+const searchInput =
+  document.getElementById("searchInput");
 
-const progress = document.getElementById("progress");
-const volume = document.getElementById("volume");
+const results =
+  document.getElementById("results");
 
-const currentTime = document.getElementById("currentTime");
-const duration = document.getElementById("duration");
+const songTitle =
+  document.getElementById("songTitle");
 
-const status = document.getElementById("status");
+const artistName =
+  document.getElementById("artistName");
 
-const searchForm = document.getElementById("searchForm");
-const searchInput = document.getElementById("searchInput");
-const results = document.getElementById("results");
+const cover =
+  document.getElementById("cover");
 
-const voiceButton = document.getElementById("voiceButton");
-const voiceControl = document.getElementById("voiceControl");
-const voiceStatus = document.getElementById("voiceStatus");
+const playButton =
+  document.getElementById("playButton");
+
+const previousButton =
+  document.getElementById("previousButton");
+
+const nextButton =
+  document.getElementById("nextButton");
+
+const progress =
+  document.getElementById("progress");
+
+const currentTime =
+  document.getElementById("currentTime");
+
+const duration =
+  document.getElementById("duration");
 
 const youtubePlayer =
   document.getElementById("youtubePlayer");
@@ -43,49 +55,39 @@ const youtubePlayer =
 ========================================= */
 
 let queue = [];
+
 let currentIndex = -1;
 
 let player = null;
+
 let playerReady = false;
+
 let isPlaying = false;
 
 let progressTimer = null;
-let pendingAutoPlay = false;
 
 
 /* =========================================
-   DEFAULT TRENDING SEARCH
+   DEFAULT INDIAN MUSIC SEARCH
 ========================================= */
 
 const DEFAULT_QUERY =
-  "India trending Hindi songs new Bollywood songs 2026";
+  "latest trending new Hindi Indian songs 2026";
 
 
 /* =========================================
-   LOAD YOUTUBE IFRAME API
+   LOAD YOUTUBE API
 ========================================= */
 
-function loadYouTubeAPI() {
+const ytScript =
+  document.createElement("script");
 
-  if (
-    document.getElementById("youtube-api")
-  ) {
-    return;
-  }
+ytScript.src =
+  "https://www.youtube.com/iframe_api";
 
-  const script =
-    document.createElement("script");
-
-  script.id =
-    "youtube-api";
-
-  script.src =
-    "https://www.youtube.com/iframe_api";
-
-  document.head.appendChild(script);
-}
-
-loadYouTubeAPI();
+document.head.appendChild(
+  ytScript
+);
 
 
 /* =========================================
@@ -104,10 +106,15 @@ window.onYouTubeIframeAPIReady =
           width: "1",
 
           playerVars: {
+
             playsinline: 1,
+
             controls: 0,
+
             rel: 0,
+
             modestbranding: 1
+
           },
 
           events: {
@@ -117,22 +124,6 @@ window.onYouTubeIframeAPIReady =
 
                 playerReady = true;
 
-                player.setVolume(
-                  Number(volume.value)
-                );
-
-                status.textContent =
-                  "Ready";
-
-                if (
-                  pendingAutoPlay &&
-                  queue.length
-                ) {
-
-                  pendingAutoPlay = false;
-
-                  playSong(0);
-                }
               },
 
 
@@ -151,9 +142,6 @@ window.onYouTubeIframeAPIReady =
 
                   startProgress();
 
-                  status.textContent =
-                    "Playing";
-
                 }
 
 
@@ -169,8 +157,6 @@ window.onYouTubeIframeAPIReady =
 
                   stopProgress();
 
-                  status.textContent =
-                    "Paused";
                 }
 
 
@@ -181,9 +167,8 @@ window.onYouTubeIframeAPIReady =
 
                   isPlaying = false;
 
-                  stopProgress();
-
                   playNext();
+
                 }
 
               }
@@ -197,7 +182,55 @@ window.onYouTubeIframeAPIReady =
 
 
 /* =========================================
-   SEARCH
+   FIRST PLAY
+========================================= */
+
+playButton.addEventListener(
+  "click",
+  function () {
+
+    if (!playerReady) {
+      return;
+    }
+
+    if (currentIndex === -1) {
+
+      loadDefaultSongs();
+
+      return;
+
+    }
+
+    if (isPlaying) {
+
+      player.pauseVideo();
+
+    } else {
+
+      player.playVideo();
+
+    }
+
+  }
+);
+
+
+/* =========================================
+   LOAD DEFAULT SONGS
+========================================= */
+
+async function loadDefaultSongs() {
+
+  await searchSongs(
+    DEFAULT_QUERY,
+    true
+  );
+
+}
+
+
+/* =========================================
+   SEARCH FORM
 ========================================= */
 
 searchForm.addEventListener(
@@ -214,38 +247,42 @@ searchForm.addEventListener(
       searchInput.focus();
 
       return;
+
     }
 
-    searchIndianMusic(
+    searchSongs(
       query,
-      true
+      false
     );
+
   }
 );
 
 
 /* =========================================
-   SEARCH INDIAN MUSIC
+   SEARCH SONGS
 ========================================= */
 
-async function searchIndianMusic(
+async function searchSongs(
   query,
-  autoPlay = false
+  autoplay
 ) {
 
-  status.textContent =
-    "Finding Indian songs...";
+  results.innerHTML =
+    `<div style="
+      padding:10px;
+      font-size:11px;
+      color:rgba(255,255,255,.6);
+    ">
+      Searching...
+    </div>`;
 
 
   try {
 
-    const finalQuery =
-      `${query} Hindi Indian Bollywood official song`;
-
-
     const url =
       `${API_URL}/search?q=${
-        encodeURIComponent(finalQuery)
+        encodeURIComponent(query)
       }`;
 
 
@@ -256,8 +293,9 @@ async function searchIndianMusic(
     if (!response.ok) {
 
       throw new Error(
-        "Search failed"
+        `HTTP ${response.status}`
       );
+
     }
 
 
@@ -265,84 +303,72 @@ async function searchIndianMusic(
       await response.json();
 
 
-    let items =
+    const items =
       Array.isArray(data.items)
-        ? data.items
+        ? data.items.filter(
+            function (item) {
+
+              return Boolean(
+                item &&
+                item.id &&
+                item.id.videoId
+              );
+
+            }
+          )
         : [];
-
-
-    /*
-      Remove invalid results.
-    */
-
-    items =
-      items.filter(
-        function (item) {
-
-          return Boolean(
-            item &&
-            item.id &&
-            item.id.videoId &&
-            item.snippet
-          );
-
-        }
-      );
 
 
     if (!items.length) {
 
-      status.textContent =
-        "No Indian songs found";
+      results.innerHTML =
+        `<div style="
+          padding:10px;
+          font-size:11px;
+          color:rgba(255,255,255,.6);
+        ">
+          No songs found.
+        </div>`;
 
       return;
+
     }
 
-
-    /*
-      New queue.
-    */
 
     queue = items;
 
     currentIndex = -1;
 
 
-    renderResults(items);
+    renderResults(
+      items
+    );
 
 
-    status.textContent =
-      `${items.length} Indian songs found`;
+    if (autoplay) {
 
-
-    /*
-      Automatically start first song.
-    */
-
-    if (autoPlay) {
-
-      if (playerReady) {
-
-        playSong(0);
-
-      }
-      else {
-
-        pendingAutoPlay = true;
-
-        status.textContent =
-          "Loading music...";
-      }
+      playSong(0);
 
     }
 
   }
+
   catch (error) {
 
-    console.error(error);
+    console.error(
+      "Relaxify search error:",
+      error
+    );
 
-    status.textContent =
-      "Unable to load songs";
+
+    results.innerHTML =
+      `<div style="
+        padding:10px;
+        font-size:11px;
+        color:rgba(255,255,255,.6);
+      ">
+        Search unavailable. Try again.
+      </div>`;
 
   }
 
@@ -350,19 +376,22 @@ async function searchIndianMusic(
 
 
 /* =========================================
-   RENDER RESULTS
+   RENDER SEARCH RESULTS
 ========================================= */
 
-function renderResults(items) {
+function renderResults(
+  items
+) {
 
   results.innerHTML = "";
 
 
-  items.forEach(
+  items.slice(0, 8).forEach(
     function (item, index) {
 
       const snippet =
         item.snippet || {};
+
 
       const videoId =
         item?.id?.videoId;
@@ -374,14 +403,14 @@ function renderResults(items) {
 
 
       const title =
-        escapeHTML(
+        cleanText(
           snippet.title ||
           "Indian Song"
         );
 
 
       const channel =
-        escapeHTML(
+        cleanText(
           snippet.channelTitle ||
           "YouTube"
         );
@@ -394,7 +423,9 @@ function renderResults(items) {
 
 
       const card =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
 
       card.className =
@@ -407,17 +438,16 @@ function renderResults(items) {
           class="result-thumb"
           src="${thumbnail}"
           alt=""
-          loading="lazy"
         >
 
         <div class="result-info">
 
           <div class="result-title">
-            ${title}
+            ${escapeHTML(title)}
           </div>
 
           <div class="result-channel">
-            ${channel}
+            ${escapeHTML(channel)}
           </div>
 
         </div>
@@ -446,7 +476,9 @@ function renderResults(items) {
         );
 
 
-      results.appendChild(card);
+      results.appendChild(
+        card
+      );
 
     }
   );
@@ -458,7 +490,9 @@ function renderResults(items) {
    PLAY SONG
 ========================================= */
 
-function playSong(index) {
+function playSong(
+  index
+) {
 
   if (
     !queue.length ||
@@ -467,6 +501,7 @@ function playSong(index) {
   ) {
 
     return;
+
   }
 
 
@@ -501,7 +536,7 @@ function playSong(index) {
   artistName.textContent =
     cleanText(
       snippet.channelTitle ||
-      "Indian Music"
+      "YouTube"
     );
 
 
@@ -517,12 +552,10 @@ function playSong(index) {
     cover.style.backgroundImage =
       `url("${thumbnail}")`;
 
-
     const note =
       cover.querySelector(
         ".cover-note"
       );
-
 
     if (note) {
       note.style.display =
@@ -533,12 +566,6 @@ function playSong(index) {
 
 
   if (!playerReady) {
-
-    pendingAutoPlay = true;
-
-    status.textContent =
-      "Loading player...";
-
     return;
   }
 
@@ -548,83 +575,14 @@ function playSong(index) {
   );
 
 
-  player.setVolume(
-    Number(volume.value)
-  );
-
-
-  progress.value = 0;
-
-  currentTime.textContent =
-    "0:00";
-
-  duration.textContent =
-    "0:00";
-
-
-  isPlaying = true;
-
   playButton.textContent =
     "❚❚";
-
-
-  status.textContent =
-    `Playing ${index + 1} of ${queue.length}`;
 
 }
 
 
 /* =========================================
-   PLAY / PAUSE
-========================================= */
-
-playButton.addEventListener(
-  "click",
-  function () {
-
-    /*
-      First play:
-      Load current Indian trending songs.
-    */
-
-    if (
-      currentIndex === -1
-    ) {
-
-      pendingAutoPlay = true;
-
-      searchIndianMusic(
-        DEFAULT_QUERY,
-        true
-      );
-
-      return;
-    }
-
-
-    if (!playerReady) {
-
-      return;
-    }
-
-
-    if (isPlaying) {
-
-      player.pauseVideo();
-
-    }
-    else {
-
-      player.playVideo();
-
-    }
-
-  }
-);
-
-
-/* =========================================
-   NEXT
+   NEXT SONG
 ========================================= */
 
 nextButton.addEventListener(
@@ -639,19 +597,12 @@ nextButton.addEventListener(
 
 function playNext() {
 
-  /*
-    If there is no queue,
-    get fresh trending songs.
-  */
-
   if (!queue.length) {
 
-    searchIndianMusic(
-      DEFAULT_QUERY,
-      true
-    );
+    loadDefaultSongs();
 
     return;
+
   }
 
 
@@ -659,21 +610,20 @@ function playNext() {
     currentIndex + 1;
 
 
-  /*
-    When queue ends,
-    fetch fresh trending songs.
-  */
-
   if (
     nextIndex >= queue.length
   ) {
 
-    searchIndianMusic(
-      DEFAULT_QUERY,
-      true
-    );
+    /*
+      Queue khatam hone par
+      naye trending songs load
+      honge.
+    */
+
+    loadDefaultSongs();
 
     return;
+
   }
 
 
@@ -685,7 +635,7 @@ function playNext() {
 
 
 /* =========================================
-   PREVIOUS
+   PREVIOUS SONG
 ========================================= */
 
 previousButton.addEventListener(
@@ -693,7 +643,6 @@ previousButton.addEventListener(
   function () {
 
     if (!queue.length) {
-
       return;
     }
 
@@ -702,12 +651,11 @@ previousButton.addEventListener(
       currentIndex - 1;
 
 
-    if (
-      previousIndex < 0
-    ) {
+    if (previousIndex < 0) {
 
       previousIndex =
         queue.length - 1;
+
     }
 
 
@@ -720,28 +668,7 @@ previousButton.addEventListener(
 
 
 /* =========================================
-   VOLUME
-========================================= */
-
-volume.addEventListener(
-  "input",
-  function () {
-
-    if (!playerReady) {
-      return;
-    }
-
-
-    player.setVolume(
-      Number(volume.value)
-    );
-
-  }
-);
-
-
-/* =========================================
-   PROGRESS / FAST FORWARD
+   PROGRESS BAR
 ========================================= */
 
 progress.addEventListener(
@@ -763,7 +690,9 @@ progress.addEventListener(
 
 
     const percentage =
-      Number(progress.value);
+      Number(
+        progress.value
+      );
 
 
     player.seekTo(
@@ -778,7 +707,7 @@ progress.addEventListener(
 
 
 /* =========================================
-   PROGRESS TIMER
+   PROGRESS UPDATE
 ========================================= */
 
 function startProgress() {
@@ -809,6 +738,7 @@ function startProgress() {
         ) {
 
           return;
+
         }
 
 
@@ -816,16 +746,19 @@ function startProgress() {
           (
             current /
             total
-          ) *
-          100;
+          ) * 100;
 
 
         currentTime.textContent =
-          formatTime(current);
+          formatTime(
+            current
+          );
 
 
         duration.textContent =
-          formatTime(total);
+          formatTime(
+            total
+          );
 
       },
       500
@@ -843,324 +776,8 @@ function stopProgress() {
     );
 
     progressTimer = null;
-  }
-
-}
-
-
-/* =========================================
-   VOICE CONTROL
-========================================= */
-
-const SpeechRecognition =
-  window.SpeechRecognition ||
-  window.webkitSpeechRecognition;
-
-
-let recognition = null;
-
-
-if (SpeechRecognition) {
-
-  recognition =
-    new SpeechRecognition();
-
-
-  recognition.lang =
-    "en-IN";
-
-
-  recognition.continuous =
-    false;
-
-
-  recognition.interimResults =
-    false;
-
-
-  recognition.onstart =
-    function () {
-
-      voiceStatus.textContent =
-        "Listening...";
-
-      voiceButton.classList.add(
-        "listening"
-      );
-
-    };
-
-
-  recognition.onend =
-    function () {
-
-      voiceButton.classList.remove(
-        "listening"
-      );
-
-    };
-
-
-  recognition.onerror =
-    function () {
-
-      voiceStatus.textContent =
-        "Couldn't hear that.";
-
-    };
-
-
-  recognition.onresult =
-    function (event) {
-
-      const command =
-        event.results[0][0]
-          .transcript
-          .toLowerCase()
-          .trim();
-
-
-      voiceStatus.textContent =
-        `Heard: "${command}"`;
-
-
-      handleVoiceCommand(
-        command
-      );
-
-    };
-
-}
-
-
-/* =========================================
-   VOICE BUTTONS
-========================================= */
-
-voiceButton.addEventListener(
-  "click",
-  startVoice
-);
-
-
-voiceControl.addEventListener(
-  "click",
-  startVoice
-);
-
-
-function startVoice() {
-
-  if (!recognition) {
-
-    voiceStatus.textContent =
-      "Voice control is not supported.";
-
-    return;
-  }
-
-
-  try {
-
-    recognition.start();
 
   }
-  catch (error) {
-
-    console.log(error);
-
-  }
-
-}
-
-
-/* =========================================
-   VOICE COMMANDS
-========================================= */
-
-function handleVoiceCommand(
-  command
-) {
-
-  if (
-    command.includes("pause")
-  ) {
-
-    if (playerReady) {
-      player.pauseVideo();
-    }
-
-    return;
-  }
-
-
-  if (
-    command.includes("resume") ||
-    command === "play"
-  ) {
-
-    if (
-      currentIndex === -1
-    ) {
-
-      searchIndianMusic(
-        DEFAULT_QUERY,
-        true
-      );
-
-    }
-    else if (playerReady) {
-
-      player.playVideo();
-
-    }
-
-    return;
-  }
-
-
-  if (
-    command.includes("next") ||
-    command.includes("skip")
-  ) {
-
-    playNext();
-
-    return;
-  }
-
-
-  if (
-    command.includes("previous") ||
-    command.includes("back")
-  ) {
-
-    previousButton.click();
-
-    return;
-  }
-
-
-  if (
-    command.includes("volume up")
-  ) {
-
-    changeVolume(10);
-
-    return;
-  }
-
-
-  if (
-    command.includes("volume down")
-  ) {
-
-    changeVolume(-10);
-
-    return;
-  }
-
-
-  if (
-    command.includes("mute")
-  ) {
-
-    volume.value = 0;
-
-    volume.dispatchEvent(
-      new Event("input")
-    );
-
-    return;
-  }
-
-
-  /*
-    Example:
-    "play Arijit Singh"
-  */
-
-  const playMatch =
-    command.match(
-      /^play (.+)$/
-    );
-
-
-  if (
-    playMatch &&
-    playMatch[1]
-  ) {
-
-    searchIndianMusic(
-      `${playMatch[1]} Indian Hindi song`,
-      true
-    );
-
-    return;
-  }
-
-
-  /*
-    Example:
-    "search romantic songs"
-  */
-
-  const searchMatch =
-    command.match(
-      /^search (.+)$/
-    );
-
-
-  if (
-    searchMatch &&
-    searchMatch[1]
-  ) {
-
-    searchIndianMusic(
-      searchMatch[1],
-      true
-    );
-
-    return;
-  }
-
-
-  voiceStatus.textContent =
-    "Try: play, pause, next, previous";
-
-}
-
-
-/* =========================================
-   CHANGE VOLUME
-========================================= */
-
-function changeVolume(amount) {
-
-  let value =
-    Number(volume.value);
-
-
-  value += amount;
-
-
-  value =
-    Math.max(
-      0,
-      Math.min(
-        100,
-        value
-      )
-    );
-
-
-  volume.value =
-    value;
-
-
-  volume.dispatchEvent(
-    new Event("input")
-  );
 
 }
 
@@ -1169,13 +786,18 @@ function changeVolume(amount) {
    FORMAT TIME
 ========================================= */
 
-function formatTime(seconds) {
+function formatTime(
+  seconds
+) {
 
   if (
-    !Number.isFinite(seconds)
+    !Number.isFinite(
+      seconds
+    )
   ) {
 
     return "0:00";
+
   }
 
 
@@ -1185,7 +807,7 @@ function formatTime(seconds) {
     );
 
 
-  const secs =
+  const secondsPart =
     Math.floor(
       seconds % 60
     );
@@ -1194,7 +816,9 @@ function formatTime(seconds) {
   return (
     minutes +
     ":" +
-    String(secs).padStart(
+    String(
+      secondsPart
+    ).padStart(
       2,
       "0"
     )
@@ -1207,7 +831,9 @@ function formatTime(seconds) {
    SECURITY
 ========================================= */
 
-function escapeHTML(text) {
+function escapeHTML(
+  text
+) {
 
   return String(text).replace(
     /[&<>"']/g,
@@ -1223,8 +849,9 @@ function escapeHTML(text) {
 
       };
 
-
-      return entities[character];
+      return entities[
+        character
+      ];
 
     }
   );
@@ -1232,21 +859,17 @@ function escapeHTML(text) {
 }
 
 
-/* =========================================
-   CLEAN TEXT
-========================================= */
-
-function cleanText(text) {
+function cleanText(
+  text
+) {
 
   const textarea =
     document.createElement(
       "textarea"
     );
 
-
   textarea.innerHTML =
     String(text);
-
 
   return textarea.value;
 
