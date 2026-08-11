@@ -1,5 +1,6 @@
 // ========================================
-// RELAXIFY API
+// RELAXIFY
+// YouTube Search + Playlists + Player
 // ========================================
 
 const API_URL =
@@ -28,20 +29,225 @@ const status =
 const playerContainer =
   document.getElementById("playerContainer");
 
-const youtubePlayer =
-  document.getElementById("youtubePlayer");
+const playerArtwork =
+  document.getElementById("playerArtwork");
 
-const closePlayer =
-  document.getElementById("closePlayer");
+const playerTitle =
+  document.getElementById("playerTitle");
+
+const playerChannel =
+  document.getElementById("playerChannel");
+
+const playPause =
+  document.getElementById("playPause");
+
+const previousTrack =
+  document.getElementById("previousTrack");
+
+const nextTrack =
+  document.getElementById("nextTrack");
+
+const progressBar =
+  document.getElementById("progressBar");
+
+const currentTime =
+  document.getElementById("currentTime");
+
+const totalTime =
+  document.getElementById("totalTime");
+
+const volumeBar =
+  document.getElementById("volumeBar");
 
 
 // ========================================
-// SEARCH FORM
+// STATE
+// ========================================
+
+let youtube;
+
+let youtubeReady = false;
+
+let currentTracks = [];
+
+let currentIndex = -1;
+
+let currentQuery = "";
+
+let progressTimer = null;
+
+
+// ========================================
+// PLAYLISTS
+// ========================================
+
+const PLAYLISTS = {
+
+  relax: {
+    title: "Relaxing music",
+    query:
+      "relaxing peaceful music"
+  },
+
+  drive: {
+    title: "Car Drive",
+    query:
+      "best car drive music"
+  },
+
+  sleep: {
+    title: "Sleep music",
+    query:
+      "deep sleep relaxing music"
+  },
+
+  lofi: {
+    title: "Lo-fi",
+    query:
+      "lofi chill beats"
+  }
+
+};
+
+
+// ========================================
+// YOUTUBE API READY
+// ========================================
+
+window.onYouTubeIframeAPIReady =
+  function () {
+
+    youtubeReady = true;
+
+    createYouTubePlayer();
+
+  };
+
+
+// ========================================
+// CREATE PLAYER
+// ========================================
+
+function createYouTubePlayer() {
+
+  const playerElement =
+    document.getElementById(
+      "youtubePlayer"
+    );
+
+  if (!playerElement) {
+    return;
+  }
+
+
+  youtube =
+    new YT.Player(
+      "youtubePlayer",
+      {
+
+        width: "1",
+        height: "1",
+
+        videoId: "",
+
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          rel: 0,
+          modestbranding: 1
+        },
+
+        events: {
+
+          onReady:
+            function (event) {
+
+              event.target.setVolume(70);
+
+            },
+
+          onStateChange:
+            handlePlayerStateChange,
+
+          onError:
+            function (event) {
+
+              console.error(
+                "YouTube error:",
+                event.data
+              );
+
+              status.textContent =
+                "Playback error";
+
+            }
+
+        }
+
+      }
+    );
+
+}
+
+
+// ========================================
+// PLAYER STATE
+// ========================================
+
+function handlePlayerStateChange(event) {
+
+  if (!youtube) {
+    return;
+  }
+
+
+  if (
+    event.data ===
+    YT.PlayerState.PLAYING
+  ) {
+
+    playPause.textContent =
+      "❚❚";
+
+    startProgress();
+
+  }
+
+
+  else if (
+    event.data ===
+    YT.PlayerState.PAUSED
+  ) {
+
+    playPause.textContent =
+      "▶";
+
+    stopProgress();
+
+  }
+
+
+  else if (
+    event.data ===
+    YT.PlayerState.ENDED
+  ) {
+
+    stopProgress();
+
+    playNext();
+
+  }
+
+}
+
+
+// ========================================
+// SEARCH
 // ========================================
 
 searchForm.addEventListener(
   "submit",
-  function(event) {
+  function (event) {
 
     event.preventDefault();
 
@@ -56,47 +262,104 @@ searchForm.addEventListener(
     }
 
     searchYouTube(query);
+
   }
 );
 
 
 // ========================================
-// QUICK MOOD BUTTONS
+// QUICK SEARCH
 // ========================================
 
 document
-  .querySelectorAll(".quick-searches button")
-  .forEach(function(button) {
+  .querySelectorAll(
+    ".quick-searches button"
+  )
+  .forEach(
+    function (button) {
 
-    button.addEventListener(
-      "click",
-      function() {
+      button.addEventListener(
+        "click",
+        function () {
 
-        const query =
-          button.dataset.query;
+          const query =
+            button.dataset.query;
 
-        searchInput.value = query;
+          searchInput.value =
+            query;
 
-        searchYouTube(query);
-      }
-    );
+          searchYouTube(query);
 
-  });
+        }
+      );
+
+    }
+  );
+
+
+// ========================================
+// PLAYLIST BUTTONS
+// ========================================
+
+document
+  .querySelectorAll(
+    ".playlist-card"
+  )
+  .forEach(
+    function (button) {
+
+      button.addEventListener(
+        "click",
+        function () {
+
+          const playlistName =
+            button.dataset.playlist;
+
+          const playlist =
+            PLAYLISTS[playlistName];
+
+          if (!playlist) {
+            return;
+          }
+
+          searchInput.value =
+            playlist.query;
+
+          searchYouTube(
+            playlist.query,
+            playlist.title
+          );
+
+        }
+      );
+
+    }
+  );
 
 
 // ========================================
 // SEARCH YOUTUBE
 // ========================================
 
-async function searchYouTube(query) {
+async function searchYouTube(
+  query,
+  customTitle = ""
+) {
+
+  currentQuery =
+    query;
 
   status.textContent =
     "Searching...";
 
+
   resultsTitle.textContent =
+    customTitle ||
     `Results for "${query}"`;
 
+
   results.innerHTML = `
+
     <div class="empty-state">
 
       <div class="empty-icon">
@@ -112,13 +375,16 @@ async function searchYouTube(query) {
       </p>
 
     </div>
+
   `;
 
 
   try {
 
     const url =
-      `${API_URL}/search?q=${encodeURIComponent(query)}`;
+      `${API_URL}/search?q=${
+        encodeURIComponent(query)
+      }`;
 
 
     const response =
@@ -128,7 +394,7 @@ async function searchYouTube(query) {
     if (!response.ok) {
 
       throw new Error(
-        `HTTP error ${response.status}`
+        `HTTP ${response.status}`
       );
 
     }
@@ -144,7 +410,24 @@ async function searchYouTube(query) {
         : [];
 
 
-    if (videos.length === 0) {
+    currentTracks =
+      videos.filter(
+        function (video) {
+
+          return Boolean(
+            video?.id?.videoId
+          );
+
+        }
+      );
+
+
+    currentIndex = -1;
+
+
+    if (
+      currentTracks.length === 0
+    ) {
 
       showEmptyResults();
 
@@ -152,11 +435,13 @@ async function searchYouTube(query) {
     }
 
 
-    renderResults(videos);
+    renderResults(
+      currentTracks
+    );
 
 
     status.textContent =
-      `${videos.length} results`;
+      `${currentTracks.length} results`;
 
   }
 
@@ -168,6 +453,7 @@ async function searchYouTube(query) {
       "Search error";
 
     results.innerHTML = `
+
       <div class="empty-state">
 
         <div class="empty-icon">
@@ -184,8 +470,11 @@ async function searchYouTube(query) {
         </p>
 
       </div>
+
     `;
+
   }
+
 }
 
 
@@ -198,150 +487,572 @@ function renderResults(videos) {
   results.innerHTML = "";
 
 
-  videos.forEach(function(video) {
+  videos.forEach(
+    function (video, index) {
 
-    const videoId =
-      video?.id?.videoId;
-
-
-    const snippet =
-      video?.snippet || {};
+      const videoId =
+        video?.id?.videoId;
 
 
-    const title =
-      escapeHTML(
-        snippet.title ||
-        "Untitled video"
-      );
+      const snippet =
+        video?.snippet || {};
 
 
-    const channel =
-      escapeHTML(
-        snippet.channelTitle ||
-        "YouTube"
-      );
-
-
-    const thumbnail =
-      snippet?.thumbnails?.high?.url ||
-      snippet?.thumbnails?.medium?.url ||
-      snippet?.thumbnails?.default?.url ||
-      "";
-
-
-    if (!videoId) {
-
-      return;
-    }
-
-
-    const card =
-      document.createElement("article");
-
-
-    card.className =
-      "card";
-
-
-    card.innerHTML = `
-
-      <img
-        class="thumbnail"
-        src="${thumbnail}"
-        alt=""
-        loading="lazy"
-      >
-
-      <div class="card-content">
-
-        <div class="video-title">
-          ${title}
-        </div>
-
-        <div class="channel">
-          ${channel}
-        </div>
-
-        <button
-          class="play-button"
-          data-video-id="${videoId}"
-        >
-          ▶ Play
-        </button>
-
-      </div>
-
-    `;
-
-
-    const playButton =
-      card.querySelector(
-        ".play-button"
-      );
-
-
-    playButton.addEventListener(
-      "click",
-      function() {
-
-        playVideo(videoId);
-
+      if (!videoId) {
+        return;
       }
-    );
 
 
-    results.appendChild(card);
+      const title =
+        escapeHTML(
+          snippet.title ||
+          "Untitled"
+        );
 
-  });
+
+      const channel =
+        escapeHTML(
+          snippet.channelTitle ||
+          "YouTube"
+        );
+
+
+      const thumbnail =
+        snippet?.thumbnails?.high?.url ||
+        snippet?.thumbnails?.medium?.url ||
+        snippet?.thumbnails?.default?.url ||
+        "";
+
+
+      const card =
+        document.createElement(
+          "article"
+        );
+
+
+      card.className =
+        "card";
+
+
+      card.innerHTML = `
+
+        <img
+          class="thumbnail"
+          src="${thumbnail}"
+          alt=""
+          loading="lazy"
+        >
+
+        <div class="card-content">
+
+          <div class="video-title">
+            ${title}
+          </div>
+
+          <div class="channel">
+            ${channel}
+          </div>
+
+          <button
+            class="play-button"
+            type="button"
+          >
+            ▶ Play
+          </button>
+
+        </div>
+
+      `;
+
+
+      const playButton =
+        card.querySelector(
+          ".play-button"
+        );
+
+
+      playButton.addEventListener(
+        "click",
+        function () {
+
+          playTrack(index);
+
+        }
+      );
+
+
+      results.appendChild(
+        card
+      );
+
+    }
+  );
 
 }
 
 
 // ========================================
-// PLAY VIDEO
+// PLAY TRACK
 // ========================================
 
-function playVideo(videoId) {
+function playTrack(index) {
+
+  if (
+    !currentTracks[index]
+  ) {
+    return;
+  }
+
+
+  const video =
+    currentTracks[index];
+
+
+  const videoId =
+    video?.id?.videoId;
+
 
   if (!videoId) {
+    return;
+  }
+
+
+  currentIndex =
+    index;
+
+
+  const snippet =
+    video.snippet || {};
+
+
+  const title =
+    snippet.title ||
+    "Untitled";
+
+
+  const channel =
+    snippet.channelTitle ||
+    "YouTube";
+
+
+  const thumbnail =
+    snippet?.thumbnails?.high?.url ||
+    snippet?.thumbnails?.medium?.url ||
+    snippet?.thumbnails?.default?.url ||
+    "";
+
+
+  updatePlayerUI(
+    title,
+    channel,
+    thumbnail
+  );
+
+
+  playerContainer
+    .classList
+    .remove("hidden");
+
+
+  playerContainer
+    .scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+
+
+  if (!youtubeReady) {
+
+    status.textContent =
+      "Player loading...";
 
     return;
   }
 
 
-  youtubePlayer.src =
-    `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0`;
+  if (!youtube) {
+
+    createYouTubePlayer();
+
+    setTimeout(
+      function () {
+
+        playYouTubeVideo(
+          videoId
+        );
+
+      },
+      1000
+    );
+
+    return;
+  }
 
 
-  playerContainer.classList.remove(
-    "hidden"
+  playYouTubeVideo(
+    videoId
   );
-
-
-  playerContainer.scrollIntoView({
-    behavior: "smooth",
-    block: "center"
-  });
 
 }
 
 
 // ========================================
-// CLOSE PLAYER
+// PLAY YOUTUBE VIDEO
 // ========================================
 
-closePlayer.addEventListener(
+function playYouTubeVideo(
+  videoId
+) {
+
+  if (
+    !youtube ||
+    !youtube.loadVideoById
+  ) {
+    return;
+  }
+
+
+  youtube.loadVideoById(
+    videoId
+  );
+
+
+  youtube.setVolume(
+    Number(volumeBar.value)
+  );
+
+
+  playPause.textContent =
+    "❚❚";
+
+
+  status.textContent =
+    "Playing";
+
+
+  startProgress();
+
+}
+
+
+// ========================================
+// UPDATE PLAYER UI
+// ========================================
+
+function updatePlayerUI(
+  title,
+  channel,
+  thumbnail
+) {
+
+  playerTitle.textContent =
+    title;
+
+
+  playerChannel.textContent =
+    channel;
+
+
+  if (thumbnail) {
+
+    playerArtwork.src =
+      thumbnail;
+
+  }
+
+
+  progressBar.value =
+    0;
+
+
+  currentTime.textContent =
+    "0:00";
+
+
+  totalTime.textContent =
+    "0:00";
+
+}
+
+
+// ========================================
+// PLAY / PAUSE
+// ========================================
+
+playPause.addEventListener(
   "click",
-  function() {
+  function () {
 
-    youtubePlayer.src = "";
+    if (!youtube) {
+      return;
+    }
 
-    playerContainer.classList.add(
-      "hidden"
+
+    const state =
+      youtube.getPlayerState();
+
+
+    if (
+      state ===
+      YT.PlayerState.PLAYING
+    ) {
+
+      youtube.pauseVideo();
+
+      playPause.textContent =
+        "▶";
+
+    }
+
+    else {
+
+      youtube.playVideo();
+
+      playPause.textContent =
+        "❚❚";
+
+    }
+
+  }
+);
+
+
+// ========================================
+// NEXT
+// ========================================
+
+nextTrack.addEventListener(
+  "click",
+  function () {
+
+    playNext();
+
+  }
+);
+
+
+function playNext() {
+
+  if (
+    currentTracks.length === 0
+  ) {
+    return;
+  }
+
+
+  let nextIndex =
+    currentIndex + 1;
+
+
+  if (
+    nextIndex >=
+    currentTracks.length
+  ) {
+
+    nextIndex = 0;
+
+  }
+
+
+  playTrack(
+    nextIndex
+  );
+
+}
+
+
+// ========================================
+// PREVIOUS
+// ========================================
+
+previousTrack.addEventListener(
+  "click",
+  function () {
+
+    if (
+      currentTracks.length === 0
+    ) {
+      return;
+    }
+
+
+    let previousIndex =
+      currentIndex - 1;
+
+
+    if (
+      previousIndex < 0
+    ) {
+
+      previousIndex =
+        currentTracks.length - 1;
+
+    }
+
+
+    playTrack(
+      previousIndex
     );
 
   }
 );
+
+
+// ========================================
+// PROGRESS
+// ========================================
+
+function startProgress() {
+
+  stopProgress();
+
+
+  progressTimer =
+    setInterval(
+      function () {
+
+        if (!youtube) {
+          return;
+        }
+
+
+        const duration =
+          youtube.getDuration();
+
+
+        const current =
+          youtube.getCurrentTime();
+
+
+        if (
+          !duration ||
+          duration <= 0
+        ) {
+          return;
+        }
+
+
+        progressBar.value =
+          (current / duration) * 100;
+
+
+        currentTime.textContent =
+          formatTime(current);
+
+
+        totalTime.textContent =
+          formatTime(duration);
+
+      },
+      500
+    );
+
+}
+
+
+function stopProgress() {
+
+  if (progressTimer) {
+
+    clearInterval(
+      progressTimer
+    );
+
+    progressTimer =
+      null;
+
+  }
+
+}
+
+
+// ========================================
+// SEEK
+// ========================================
+
+progressBar.addEventListener(
+  "input",
+  function () {
+
+    if (!youtube) {
+      return;
+    }
+
+
+    const duration =
+      youtube.getDuration();
+
+
+    if (
+      !duration ||
+      duration <= 0
+    ) {
+      return;
+    }
+
+
+    const newTime =
+      duration *
+      (Number(progressBar.value) / 100);
+
+
+    youtube.seekTo(
+      newTime,
+      true
+    );
+
+  }
+);
+
+
+// ========================================
+// VOLUME
+// ========================================
+
+volumeBar.addEventListener(
+  "input",
+  function () {
+
+    if (!youtube) {
+      return;
+    }
+
+
+    youtube.setVolume(
+      Number(volumeBar.value)
+    );
+
+  }
+);
+
+
+// ========================================
+// TIME FORMAT
+// ========================================
+
+function formatTime(seconds) {
+
+  seconds =
+    Math.floor(
+      Number(seconds) || 0
+    );
+
+
+  const minutes =
+    Math.floor(
+      seconds / 60
+    );
+
+
+  const remaining =
+    seconds % 60;
+
+
+  return `${minutes}:${String(
+    remaining
+  ).padStart(2, "0")}`;
+
+}
 
 
 // ========================================
@@ -373,6 +1084,7 @@ function showEmptyResults() {
     </div>
 
   `;
+
 }
 
 
@@ -384,7 +1096,7 @@ function escapeHTML(text) {
 
   return String(text).replace(
     /[&<>"']/g,
-    function(character) {
+    function (character) {
 
       const entities = {
 
@@ -396,9 +1108,20 @@ function escapeHTML(text) {
 
       };
 
-      return entities[character];
+
+      return entities[
+        character
+      ];
 
     }
   );
 
 }
+
+
+// ========================================
+// INITIAL STATUS
+// ========================================
+
+status.textContent =
+  "Ready when you are";
