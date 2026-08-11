@@ -1,18 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <meta
-    name="theme-color"
-    content="#05070c"
-  >
+  <meta name="theme-color" content="#05070c">
 
   <title>Relaxify — Indian Music</title>
 
@@ -39,10 +31,8 @@
     body {
       font-family: "Inter", sans-serif;
       background: #05070c;
-      color: #fff;
+      color: white;
     }
-
-    /* BACKGROUND */
 
     .background {
       position: fixed;
@@ -51,41 +41,20 @@
 
       background-image:
         linear-gradient(
-          rgba(0,0,0,.38),
+          rgba(0,0,0,.35),
           rgba(0,0,0,.72)
         ),
-        url("https://unsplash.com/photos/photography-of-lightning-storm-in9-n0JwgZ0/download?force=true&w=1920");
+        url("https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1920&q=85");
 
       background-size: cover;
       background-position: center;
     }
 
-    .background::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-
-      background:
-        radial-gradient(
-          circle at 50% 35%,
-          rgba(255,255,255,.08),
-          transparent 42%
-        ),
-        linear-gradient(
-          to bottom,
-          transparent,
-          rgba(0,0,0,.55)
-        );
-    }
-
-
-    /* APP */
-
     .app {
       width: 100%;
       height: 100dvh;
 
-      padding: 24px 18px 18px;
+      padding: 22px 18px 15px;
 
       display: flex;
       flex-direction: column;
@@ -93,41 +62,27 @@
       overflow: hidden;
     }
 
-
-    /* HEADER */
-
     .topbar {
       display: flex;
       justify-content: center;
-      align-items: center;
-
       flex-shrink: 0;
     }
 
     .brand {
-      color: #fff;
+      color: white;
       text-decoration: none;
 
-      font-family:
-        "Playfair Display",
-        serif;
+      font-family: "Playfair Display", serif;
 
-      font-size: clamp(
-        46px,
-        12vw,
-        76px
-      );
+      font-size: clamp(45px, 12vw, 76px);
 
       font-weight: 800;
 
       letter-spacing: -3px;
 
       text-shadow:
-        0 5px 35px rgba(0,0,0,.7);
+        0 5px 30px rgba(0,0,0,.7);
     }
-
-
-    /* PLAYER AREA */
 
     .player-section {
       flex: 1;
@@ -135,23 +90,80 @@
       min-height: 0;
 
       display: flex;
-      align-items: center;
-      justify-content: flex-end;
-
       flex-direction: column;
 
-      padding-bottom: 22px;
+      justify-content: flex-end;
+
+      padding-bottom: 18px;
     }
 
+    /* SEARCH */
 
-    /* GLASS MUSIC PLAYER */
+    .search-box {
+      width: min(560px, 100%);
+
+      display: flex;
+
+      gap: 7px;
+
+      margin: 0 auto 10px;
+    }
+
+    .search-box input {
+      flex: 1;
+
+      min-width: 0;
+
+      height: 36px;
+
+      padding: 0 13px;
+
+      border: 1px solid
+        rgba(255,255,255,.15);
+
+      border-radius: 12px;
+
+      outline: none;
+
+      color: white;
+
+      background:
+        rgba(20,20,25,.52);
+
+      backdrop-filter: blur(20px);
+
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .search-box input::placeholder {
+      color:
+        rgba(255,255,255,.55);
+    }
+
+    .search-box button {
+      height: 36px;
+
+      padding: 0 15px;
+
+      border: 0;
+
+      border-radius: 12px;
+
+      background: white;
+
+      color: #111;
+
+      font-weight: 600;
+
+      cursor: pointer;
+    }
+
+    /* PLAYER */
 
     .glass-player {
+      width: min(560px, 100%);
 
-      width: min(
-        560px,
-        100%
-      );
+      margin: 0 auto;
 
       padding: 13px 15px;
 
@@ -164,22 +176,16 @@
         1px solid
         rgba(255,255,255,.17);
 
-      backdrop-filter:
-        blur(25px);
+      backdrop-filter: blur(25px);
 
-      -webkit-backdrop-filter:
-        blur(25px);
+      -webkit-backdrop-filter: blur(25px);
 
       box-shadow:
         0 20px 60px
         rgba(0,0,0,.55);
     }
 
-
-    /* TOP PLAYER ROW */
-
     .player-top {
-
       display: flex;
 
       align-items: center;
@@ -189,11 +195,7 @@
       width: 100%;
     }
 
-
-    /* SONG PHOTO */
-
     .cover {
-
       width: 55px;
       height: 55px;
 
@@ -202,18 +204,10 @@
       border-radius: 13px;
 
       background:
-        linear-gradient(
-          135deg,
-          rgba(255,255,255,.18),
-          rgba(255,255,255,.04)
-        );
+        rgba(255,255,255,.08);
 
       background-size: cover;
       background-position: center;
-
-      border:
-        1px solid
-        rgba(255,255,255,.16);
 
       display: flex;
 
@@ -228,20 +222,12 @@
       opacity: .75;
     }
 
-
-    /* SONG NAME */
-
     .song-info {
-
       min-width: 0;
-
       flex: 1;
-
-      text-align: left;
     }
 
     .song-info h1 {
-
       font-size: 14px;
 
       font-weight: 700;
@@ -251,12 +237,9 @@
       overflow: hidden;
 
       text-overflow: ellipsis;
-
-      line-height: 1.3;
     }
 
     .song-info p {
-
       margin-top: 3px;
 
       font-size: 11px;
@@ -271,22 +254,17 @@
       text-overflow: ellipsis;
     }
 
-
-    /* CONTROLS */
-
     .controls {
-
       flex-shrink: 0;
 
       display: flex;
 
       align-items: center;
 
-      gap: 8px;
+      gap: 7px;
     }
 
     .controls button {
-
       width: 34px;
       height: 34px;
 
@@ -294,9 +272,9 @@
 
       background: transparent;
 
-      color: #fff;
+      color: white;
 
-      font-size: 20px;
+      font-size: 19px;
 
       display: flex;
 
@@ -311,34 +289,24 @@
     }
 
     .controls .main-play {
-
-      width: 45px;
-      height: 45px;
+      width: 44px;
+      height: 44px;
 
       border-radius: 50%;
 
-      background: #fff;
+      background: white;
 
       color: #111;
 
       font-size: 16px;
-
-      box-shadow:
-        0 7px 22px
-        rgba(0,0,0,.4);
     }
 
-
-    /* PROGRESS */
-
     .progress-area {
-
       width: 100%;
 
       display: grid;
 
-      grid-template-columns:
-        32px 1fr 32px;
+      grid-template-columns: 32px 1fr 32px;
 
       align-items: center;
 
@@ -348,7 +316,6 @@
     }
 
     .progress-area span {
-
       font-size: 10px;
 
       color:
@@ -360,21 +327,106 @@
     }
 
     #progress {
-
       width: 100%;
-
       height: 4px;
 
-      accent-color: #fff;
+      accent-color: white;
 
       cursor: pointer;
     }
 
+    /* SEARCH RESULTS */
 
-    /* HIDDEN YOUTUBE */
+    .results {
+      width: min(560px, 100%);
+
+      max-height: 180px;
+
+      overflow-y: auto;
+
+      margin: 0 auto 8px;
+    }
+
+    .result-card {
+      display: flex;
+
+      align-items: center;
+
+      gap: 9px;
+
+      padding: 7px;
+
+      margin-bottom: 5px;
+
+      border-radius: 12px;
+
+      background:
+        rgba(20,20,25,.65);
+
+      border:
+        1px solid
+        rgba(255,255,255,.1);
+
+      backdrop-filter: blur(15px);
+    }
+
+    .result-thumb {
+      width: 42px;
+      height: 42px;
+
+      object-fit: cover;
+
+      border-radius: 8px;
+
+      flex-shrink: 0;
+    }
+
+    .result-info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .result-title {
+      font-size: 12px;
+
+      font-weight: 600;
+
+      white-space: nowrap;
+
+      overflow: hidden;
+
+      text-overflow: ellipsis;
+    }
+
+    .result-channel {
+      font-size: 10px;
+
+      color:
+        rgba(255,255,255,.55);
+
+      margin-top: 2px;
+    }
+
+    .result-play {
+      width: 32px;
+      height: 32px;
+
+      border: 0;
+
+      border-radius: 50%;
+
+      background: white;
+
+      color: #111;
+
+      cursor: pointer;
+    }
+
+    #status {
+      display: none;
+    }
 
     #youtubePlayer {
-
       position: fixed;
 
       width: 1px;
@@ -382,31 +434,18 @@
 
       left: -10000px;
       top: -10000px;
-
-      overflow: hidden;
     }
-
-
-    /* HIDDEN SEARCH */
-
-    .search-section {
-      display: none;
-    }
-
-
-    /* FOOTER */
 
     footer {
-
       flex-shrink: 0;
 
       width: 100%;
 
       display: flex;
 
-      align-items: center;
-
       justify-content: space-between;
+
+      align-items: center;
 
       font-size: 10px;
 
@@ -415,24 +454,19 @@
     }
 
     footer strong {
-      color: #fff;
+      color: white;
     }
 
     footer a {
-
-      color: #fff;
+      color: white;
 
       text-decoration: none;
     }
 
-
-    /* SMALL SCREEN */
-
     @media (max-height: 650px) {
 
       .app {
-        padding-top: 12px;
-        padding-bottom: 10px;
+        padding-top: 10px;
       }
 
       .brand {
@@ -440,45 +474,23 @@
       }
 
       .player-section {
-        padding-bottom: 12px;
-      }
-
-      .glass-player {
-        padding: 10px 12px;
-      }
-
-      .cover {
-        width: 48px;
-        height: 48px;
-      }
-
-      .controls .main-play {
-        width: 40px;
-        height: 40px;
+        padding-bottom: 10px;
       }
 
       footer {
         display: none;
       }
+
     }
 
   </style>
-
 </head>
-
 
 <body>
 
-
-  <!-- BACKGROUND -->
-
   <div class="background"></div>
 
-
   <main class="app">
-
-
-    <!-- LOGO -->
 
     <header class="topbar">
 
@@ -492,18 +504,44 @@
     </header>
 
 
-    <!-- MUSIC PLAYER -->
-
     <section class="player-section">
 
 
-      <div class="glass-player">
+      <!-- SEARCH -->
 
+      <form
+        class="search-box"
+        id="searchForm"
+      >
+
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Search Indian songs..."
+          autocomplete="off"
+        >
+
+        <button type="submit">
+          Search
+        </button>
+
+      </form>
+
+
+      <!-- SEARCH RESULTS -->
+
+      <div
+        id="results"
+        class="results"
+      ></div>
+
+
+      <!-- PLAYER -->
+
+      <div class="glass-player">
 
         <div class="player-top">
 
-
-          <!-- SONG PHOTO -->
 
           <div
             class="cover"
@@ -516,8 +554,6 @@
 
           </div>
 
-
-          <!-- SONG NAME -->
 
           <div class="song-info">
 
@@ -532,44 +568,34 @@
           </div>
 
 
-          <!-- CONTROLS -->
-
           <div class="controls">
 
             <button
               id="previousButton"
               type="button"
-              aria-label="Previous"
             >
               ⏮
             </button>
-
 
             <button
               id="playButton"
               class="main-play"
               type="button"
-              aria-label="Play"
             >
               ▶
             </button>
 
-
             <button
               id="nextButton"
               type="button"
-              aria-label="Next"
             >
               ⏭
             </button>
 
           </div>
 
-
         </div>
 
-
-        <!-- PROGRESS -->
 
         <div class="progress-area">
 
@@ -591,47 +617,13 @@
 
         </div>
 
-
       </div>
 
-
     </section>
 
-
-    <!-- HIDDEN SEARCH -->
-
-    <section
-      class="search-section"
-    >
-
-      <form id="searchForm">
-
-        <input
-          id="searchInput"
-          type="search"
-        >
-
-        <button type="submit">
-          Search
-        </button>
-
-      </form>
-
-      <p id="status">
-        Ready
-      </p>
-
-      <div id="results"></div>
-
-    </section>
-
-
-    <!-- YOUTUBE PLAYER -->
 
     <div id="youtubePlayer"></div>
 
-
-    <!-- FOOTER -->
 
     <footer>
 
@@ -652,674 +644,10 @@
 
     </footer>
 
-
   </main>
 
 
-  <script>
-
-    /* =========================================
-       RELAXIFY MUSIC ENGINE
-    ========================================= */
-
-    const API_URL =
-      "https://relaxify-api.djboy4696.workers.dev";
-
-
-    const searchForm =
-      document.getElementById(
-        "searchForm"
-      );
-
-    const searchInput =
-      document.getElementById(
-        "searchInput"
-      );
-
-    const results =
-      document.getElementById(
-        "results"
-      );
-
-    const status =
-      document.getElementById(
-        "status"
-      );
-
-    const songTitle =
-      document.getElementById(
-        "songTitle"
-      );
-
-    const artistName =
-      document.getElementById(
-        "artistName"
-      );
-
-    const cover =
-      document.getElementById(
-        "cover"
-      );
-
-    const playButton =
-      document.getElementById(
-        "playButton"
-      );
-
-    const previousButton =
-      document.getElementById(
-        "previousButton"
-      );
-
-    const nextButton =
-      document.getElementById(
-        "nextButton"
-      );
-
-    const progress =
-      document.getElementById(
-        "progress"
-      );
-
-    const currentTime =
-      document.getElementById(
-        "currentTime"
-      );
-
-    const duration =
-      document.getElementById(
-        "duration"
-      );
-
-    const youtubePlayer =
-      document.getElementById(
-        "youtubePlayer"
-      );
-
-
-    let queue = [];
-
-    let currentIndex = -1;
-
-    let player = null;
-
-    let playerReady = false;
-
-    let isPlaying = false;
-
-    let progressTimer = null;
-
-
-    /* =========================================
-       LOAD YOUTUBE IFRAME API
-    ========================================= */
-
-    const script =
-      document.createElement(
-        "script"
-      );
-
-    script.src =
-      "https://www.youtube.com/iframe_api";
-
-    document.head.appendChild(
-      script
-    );
-
-
-    /* =========================================
-       YOUTUBE READY
-    ========================================= */
-
-    window.onYouTubeIframeAPIReady =
-      function () {
-
-        player =
-          new YT.Player(
-            youtubePlayer,
-            {
-
-              height: "1",
-              width: "1",
-
-              playerVars: {
-
-                playsinline: 1,
-
-                controls: 0,
-
-                rel: 0,
-
-                modestbranding: 1
-
-              },
-
-              events: {
-
-                onReady:
-                  function () {
-
-                    playerReady = true;
-
-                  },
-
-
-                onStateChange:
-                  function (event) {
-
-                    if (
-                      event.data ===
-                      YT.PlayerState.PLAYING
-                    ) {
-
-                      isPlaying = true;
-
-                      playButton.textContent =
-                        "❚❚";
-
-                      startProgress();
-
-                    }
-
-
-                    if (
-                      event.data ===
-                      YT.PlayerState.PAUSED
-                    ) {
-
-                      isPlaying = false;
-
-                      playButton.textContent =
-                        "▶";
-
-                      stopProgress();
-
-                    }
-
-
-                    if (
-                      event.data ===
-                      YT.PlayerState.ENDED
-                    ) {
-
-                      playNext();
-
-                    }
-
-                  }
-
-              }
-
-            }
-          );
-
-      };
-
-
-    /* =========================================
-       SEARCH INDIAN MUSIC
-    ========================================= */
-
-    async function searchIndianMusic(
-      query
-    ) {
-
-      try {
-
-        const finalQuery =
-          `${query} Hindi Indian song`;
-
-
-        const url =
-          `${API_URL}/search?q=${
-            encodeURIComponent(
-              finalQuery
-            )
-          }`;
-
-
-        const response =
-          await fetch(url);
-
-
-        if (!response.ok) {
-
-          throw new Error(
-            "Search failed"
-          );
-
-        }
-
-
-        const data =
-          await response.json();
-
-
-        const items =
-          Array.isArray(
-            data.items
-          )
-            ? data.items.filter(
-                item =>
-                  item &&
-                  item.id &&
-                  item.id.videoId
-              )
-            : [];
-
-
-        if (!items.length) {
-
-          return;
-
-        }
-
-
-        queue = items;
-
-        playSong(0);
-
-      }
-
-      catch (error) {
-
-        console.error(
-          error
-        );
-
-      }
-
-    }
-
-
-    /* =========================================
-       PLAY SONG
-    ========================================= */
-
-    function playSong(
-      index
-    ) {
-
-      if (
-        !queue.length ||
-        index < 0 ||
-        index >= queue.length
-      ) {
-
-        return;
-
-      }
-
-
-      const item =
-        queue[index];
-
-
-      const videoId =
-        item?.id?.videoId;
-
-
-      const snippet =
-        item?.snippet || {};
-
-
-      if (!videoId) {
-
-        return;
-
-      }
-
-
-      currentIndex =
-        index;
-
-
-      songTitle.textContent =
-        cleanText(
-          snippet.title ||
-          "Indian Music"
-        );
-
-
-      artistName.textContent =
-        cleanText(
-          snippet.channelTitle ||
-          "YouTube"
-        );
-
-
-      const thumbnail =
-        snippet?.thumbnails?.high?.url ||
-        snippet?.thumbnails?.medium?.url ||
-        snippet?.thumbnails?.default?.url ||
-        "";
-
-
-      if (thumbnail) {
-
-        cover.style.backgroundImage =
-          `url("${thumbnail}")`;
-
-        cover
-          .querySelector(
-            ".cover-note"
-          )
-          .style.display =
-          "none";
-
-      }
-
-
-      if (!playerReady) {
-
-        return;
-
-      }
-
-
-      player.loadVideoById(
-        videoId
-      );
-
-    }
-
-
-    /* =========================================
-       PLAY / PAUSE
-    ========================================= */
-
-    playButton.addEventListener(
-      "click",
-      function () {
-
-        if (!playerReady) {
-
-          return;
-
-        }
-
-
-        if (
-          currentIndex === -1
-        ) {
-
-          searchIndianMusic(
-            "latest trending romantic Hindi songs"
-          );
-
-          return;
-
-        }
-
-
-        if (isPlaying) {
-
-          player.pauseVideo();
-
-        }
-        else {
-
-          player.playVideo();
-
-        }
-
-      }
-    );
-
-
-    /* =========================================
-       NEXT
-    ========================================= */
-
-    nextButton.addEventListener(
-      "click",
-      playNext
-    );
-
-
-    function playNext() {
-
-      if (!queue.length) {
-
-        searchIndianMusic(
-          "latest trending romantic Hindi songs"
-        );
-
-        return;
-
-      }
-
-
-      let nextIndex =
-        currentIndex + 1;
-
-
-      if (
-        nextIndex >= queue.length
-      ) {
-
-        nextIndex = 0;
-
-      }
-
-
-      playSong(
-        nextIndex
-      );
-
-    }
-
-
-    /* =========================================
-       PREVIOUS
-    ========================================= */
-
-    previousButton.addEventListener(
-      "click",
-      function () {
-
-        if (!queue.length) {
-
-          return;
-
-        }
-
-
-        let previousIndex =
-          currentIndex - 1;
-
-
-        if (
-          previousIndex < 0
-        ) {
-
-          previousIndex =
-            queue.length - 1;
-
-        }
-
-
-        playSong(
-          previousIndex
-        );
-
-      }
-    );
-
-
-    /* =========================================
-       PROGRESS
-    ========================================= */
-
-    progress.addEventListener(
-      "input",
-      function () {
-
-        if (!playerReady) {
-
-          return;
-
-        }
-
-
-        const total =
-          player.getDuration();
-
-
-        if (!total) {
-
-          return;
-
-        }
-
-
-        player.seekTo(
-          total *
-          Number(progress.value) /
-          100,
-          true
-        );
-
-      }
-    );
-
-
-    function startProgress() {
-
-      stopProgress();
-
-
-      progressTimer =
-        setInterval(
-          function () {
-
-            if (!playerReady) {
-
-              return;
-
-            }
-
-
-            const total =
-              player.getDuration();
-
-
-            const current =
-              player.getCurrentTime();
-
-
-            if (!total) {
-
-              return;
-
-            }
-
-
-            progress.value =
-              (
-                current /
-                total
-              ) * 100;
-
-
-            currentTime.textContent =
-              formatTime(
-                current
-              );
-
-
-            duration.textContent =
-              formatTime(
-                total
-              );
-
-          },
-          500
-        );
-
-    }
-
-
-    function stopProgress() {
-
-      if (progressTimer) {
-
-        clearInterval(
-          progressTimer
-        );
-
-        progressTimer = null;
-
-      }
-
-    }
-
-
-    /* =========================================
-       HELPERS
-    ========================================= */
-
-    function formatTime(
-      seconds
-    ) {
-
-      if (
-        !Number.isFinite(
-          seconds
-        )
-      ) {
-
-        return "0:00";
-
-      }
-
-
-      const minutes =
-        Math.floor(
-          seconds / 60
-        );
-
-
-      const secs =
-        Math.floor(
-          seconds % 60
-        );
-
-
-      return (
-        minutes +
-        ":" +
-        String(
-          secs
-        ).padStart(
-          2,
-          "0"
-        )
-      );
-
-    }
-
-
-    function cleanText(
-      text
-    ) {
-
-      const textarea =
-        document.createElement(
-          "textarea"
-        );
-
-
-      textarea.innerHTML =
-        String(text);
-
-
-      return textarea.value;
-
-    }
-
-  </script>
+  <script src="script.js"></script>
 
 </body>
-
 </html>
