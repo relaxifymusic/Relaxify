@@ -1,5 +1,11 @@
 /* =========================================
-   RELAXIFY MUSIC ENGINE
+   RELAXIFY
+   Simple Indian Music Player
+========================================= */
+
+
+/* =========================================
+   API
 ========================================= */
 
 const API_URL =
@@ -19,74 +25,210 @@ const searchInput =
 const results =
   document.getElementById("results");
 
-const resultsTitle =
-  document.getElementById("resultsTitle");
-
 const status =
   document.getElementById("status");
 
-const youtubeContainer =
-  document.getElementById("youtubeContainer");
+const songTitle =
+  document.getElementById("songTitle");
 
-const youtubePlayer =
-  document.getElementById("youtubePlayer");
+const artistName =
+  document.getElementById("artistName");
 
-const trackTitle =
-  document.getElementById("trackTitle");
-
-const trackArtist =
-  document.getElementById("trackArtist");
-
-const albumArt =
-  document.getElementById("albumArt");
+const cover =
+  document.getElementById("cover");
 
 const playButton =
   document.getElementById("playButton");
 
-const nextButton =
-  document.getElementById("nextButton");
-
 const previousButton =
   document.getElementById("previousButton");
 
+const nextButton =
+  document.getElementById("nextButton");
+
+const progress =
+  document.getElementById("progress");
+
+const volume =
+  document.getElementById("volume");
+
+const currentTime =
+  document.getElementById("currentTime");
+
+const duration =
+  document.getElementById("duration");
+
+const voiceButton =
+  document.getElementById("voiceButton");
+
+const voiceControl =
+  document.getElementById("voiceControl");
+
+const voiceStatus =
+  document.getElementById("voiceStatus");
+
+const youtubePlayer =
+  document.getElementById("youtubePlayer");
+
 
 /* =========================================
-   MUSIC QUEUE
+   PLAYER STATE
 ========================================= */
 
-let musicQueue = [];
+let queue = [];
 
 let currentIndex = -1;
 
+let player = null;
+
+let playerReady = false;
+
 let isPlaying = false;
 
+let progressTimer = null;
+
 
 /* =========================================
-   SPECIAL PLAYLIST SEARCHES
+   LOAD YOUTUBE IFRAME API
 ========================================= */
 
-const PLAYLIST_QUERIES = {
+function loadYouTubeAPI() {
 
-  relax:
-    "calm ambient instrumental music no vocals",
+  if (
+    document.getElementById(
+      "youtube-api"
+    )
+  ) {
+    return;
+  }
 
-  drive:
-    "night drive synthwave chill electronic music",
 
-  sleep:
-    "deep sleep ambient instrumental music no vocals",
+  const tag =
+    document.createElement(
+      "script"
+    );
 
-  lofi:
-    "lofi hip hop instrumental chill beats no vocals",
 
-  meditation:
-    "peaceful meditation instrumental ambient music"
+  tag.id =
+    "youtube-api";
 
-};
+
+  tag.src =
+    "https://www.youtube.com/iframe_api";
+
+
+  document.head.appendChild(
+    tag
+  );
+
+}
+
+
+loadYouTubeAPI();
 
 
 /* =========================================
-   SEARCH FORM
+   YOUTUBE READY
+========================================= */
+
+window.onYouTubeIframeAPIReady =
+  function() {
+
+    player =
+      new YT.Player(
+        youtubePlayer,
+        {
+
+          height: "1",
+
+          width: "1",
+
+          playerVars: {
+
+            playsinline: 1,
+
+            controls: 0,
+
+            rel: 0,
+
+            modestbranding: 1
+
+          },
+
+          events: {
+
+            onReady:
+              function(event) {
+
+                playerReady = true;
+
+                player.setVolume(
+                  Number(
+                    volume.value
+                  )
+                );
+
+              },
+
+
+            onStateChange:
+              function(event) {
+
+                if (
+                  event.data ===
+                  YT.PlayerState.PLAYING
+                ) {
+
+                  isPlaying =
+                    true;
+
+                  playButton.textContent =
+                    "❚❚";
+
+                  startProgress();
+
+                }
+
+
+                if (
+                  event.data ===
+                  YT.PlayerState.PAUSED
+                ) {
+
+                  isPlaying =
+                    false;
+
+                  playButton.textContent =
+                    "▶";
+
+                  stopProgress();
+
+                }
+
+
+                if (
+                  event.data ===
+                  YT.PlayerState.ENDED
+                ) {
+
+                  isPlaying =
+                    false;
+
+                  playNext();
+
+                }
+
+              }
+
+        }
+
+      );
+
+  };
+
+
+/* =========================================
+   SEARCH
 ========================================= */
 
 searchForm.addEventListener(
@@ -95,140 +237,57 @@ searchForm.addEventListener(
 
     event.preventDefault();
 
+
     const query =
       searchInput.value.trim();
+
 
     if (!query) {
 
       searchInput.focus();
 
       return;
+
     }
 
-    searchYouTube(query);
+
+    searchIndianMusic(
+      query
+    );
 
   }
 );
 
 
 /* =========================================
-   MOOD / PLAYLIST BUTTONS
+   SEARCH INDIAN MUSIC
 ========================================= */
 
-document
-  .querySelectorAll(
-    ".quick-moods button, .playlist-card"
-  )
-  .forEach(function(button) {
-
-    button.addEventListener(
-      "click",
-      function() {
-
-        let query =
-          button.dataset.query || "";
-
-        const text =
-          button.textContent.toLowerCase();
-
-
-        if (text.includes("relax")) {
-
-          query =
-            PLAYLIST_QUERIES.relax;
-
-        }
-
-        else if (
-          text.includes("car")
-        ) {
-
-          query =
-            PLAYLIST_QUERIES.drive;
-
-        }
-
-        else if (
-          text.includes("sleep")
-        ) {
-
-          query =
-            PLAYLIST_QUERIES.sleep;
-
-        }
-
-        else if (
-          text.includes("lo-fi") ||
-          text.includes("lofi")
-        ) {
-
-          query =
-            PLAYLIST_QUERIES.lofi;
-
-        }
-
-        else if (
-          text.includes("meditation")
-        ) {
-
-          query =
-            PLAYLIST_QUERIES.meditation;
-
-        }
-
-
-        searchInput.value =
-          query;
-
-
-        searchYouTube(
-          query
-        );
-
-      }
-    );
-
-  });
-
-
-/* =========================================
-   SEARCH YOUTUBE
-========================================= */
-
-async function searchYouTube(query) {
+async function searchIndianMusic(
+  query
+) {
 
   status.textContent =
-    "Searching...";
+    "Searching Indian music...";
 
 
-  resultsTitle.textContent =
-    getPrettyTitle(query);
-
-
-  results.innerHTML = `
-
-    <div class="empty-state">
-
-      <div>◌</div>
-
-      <h3>
-        Finding something peaceful...
-      </h3>
-
-      <p>
-        Searching for the right music.
-      </p>
-
-    </div>
-
-  `;
+  results.innerHTML =
+    `<p style="color:#737e92">
+      Finding music...
+    </p>`;
 
 
   try {
 
+    const finalQuery =
+      `${query} Hindi Indian music`;
+
+
     const url =
       `${API_URL}/search?q=${
-        encodeURIComponent(query)
+        encodeURIComponent(
+          finalQuery
+        )
       }`;
 
 
@@ -239,8 +298,7 @@ async function searchYouTube(query) {
     if (!response.ok) {
 
       throw new Error(
-        "API Error: " +
-        response.status
+        "Search failed"
       );
 
     }
@@ -250,228 +308,76 @@ async function searchYouTube(query) {
       await response.json();
 
 
-    let videos =
-      Array.isArray(data.items)
+    let items =
+      Array.isArray(
+        data.items
+      )
         ? data.items
         : [];
 
 
-    /*
-      Remove invalid results.
-    */
-
-    videos =
-      videos.filter(
-        function(video) {
+    items =
+      items.filter(
+        function(item) {
 
           return Boolean(
-            video &&
-            video.id &&
-            video.id.videoId
+            item &&
+            item.id &&
+            item.id.videoId
           );
 
         }
       );
 
 
-    /*
-      Extra filtering for special playlists.
-      This reduces irrelevant videos.
-    */
-
     if (
-      isSpecialPlaylist(query)
+      items.length === 0
     ) {
 
-      videos =
-        filterMusicResults(
-          videos,
-          query
-        );
+      results.innerHTML =
+        `<p style="color:#737e92">
+          No music found.
+        </p>`;
 
-    }
-
-
-    if (
-      videos.length === 0
-    ) {
-
-      showEmptyResults();
+      status.textContent =
+        "No results";
 
       return;
+
     }
 
 
-    musicQueue =
-      videos;
-
-
-    currentIndex = -1;
-
-    isPlaying = false;
+    queue =
+      items;
 
 
     renderResults(
-      videos
+      items
     );
 
 
     status.textContent =
-      `${videos.length} songs found`;
-
-
-    /*
-      IMPORTANT:
-      Do NOT automatically play
-      the first result.
-    */
+      `${items.length} results`;
 
   }
 
-  catch (error) {
+  catch(error) {
 
     console.error(
-      "Relaxify search error:",
       error
     );
 
 
     status.textContent =
-      "Search failed";
+      "Search error";
 
 
-    results.innerHTML = `
-
-      <div class="empty-state">
-
-        <div>!</div>
-
-        <h3>
-          Unable to search
-        </h3>
-
-        <p>
-          Please check your connection
-          and try again.
-        </p>
-
-      </div>
-
-    `;
+    results.innerHTML =
+      `<p style="color:#737e92">
+        Unable to search right now.
+      </p>`;
 
   }
-
-}
-
-
-/* =========================================
-   SPECIAL PLAYLIST DETECTION
-========================================= */
-
-function isSpecialPlaylist(query) {
-
-  const q =
-    query.toLowerCase();
-
-
-  return (
-    q.includes("ambient") ||
-    q.includes("synthwave") ||
-    q.includes("night drive") ||
-    q.includes("deep sleep") ||
-    q.includes("lofi") ||
-    q.includes("meditation")
-  );
-
-}
-
-
-/* =========================================
-   FILTER MUSIC RESULTS
-========================================= */
-
-function filterMusicResults(
-  videos,
-  query
-) {
-
-  const q =
-    query.toLowerCase();
-
-
-  const unwanted = [
-
-    "bird",
-
-    "birds",
-
-    "chirping",
-
-    "sparrow",
-
-    "parrot",
-
-    "rooster",
-
-    "animal",
-
-    "forest sounds",
-
-    "nature sounds",
-
-    "rain sounds",
-
-    "asmr",
-
-    "podcast",
-
-    "news",
-
-    "interview",
-
-    "reaction",
-
-    "shorts"
-
-  ];
-
-
-  /*
-    Keep results that don't contain
-    unwanted nature/content keywords.
-  */
-
-  const filtered =
-    videos.filter(
-      function(video) {
-
-        const title =
-          String(
-            video?.snippet?.title || ""
-          ).toLowerCase();
-
-
-        return !unwanted.some(
-          function(word) {
-
-            return title.includes(word);
-
-          }
-        );
-
-      }
-    );
-
-
-  /*
-    If filtering removed everything,
-    use original results rather than
-    showing an empty page.
-  */
-
-  return filtered.length
-    ? filtered
-    : videos;
 
 }
 
@@ -481,32 +387,28 @@ function filterMusicResults(
 ========================================= */
 
 function renderResults(
-  videos
+  items
 ) {
 
-  results.innerHTML = "";
+  results.innerHTML =
+    "";
 
 
-  videos.forEach(
-    function(video, index) {
-
-      const videoId =
-        video?.id?.videoId;
-
+  items.forEach(
+    function(item, index) {
 
       const snippet =
-        video?.snippet || {};
+        item.snippet || {};
 
 
-      if (!videoId) {
-        return;
-      }
+      const videoId =
+        item.id.videoId;
 
 
       const title =
         escapeHTML(
           snippet.title ||
-          "Unknown song"
+          "Hindi song"
         );
 
 
@@ -518,7 +420,6 @@ function renderResults(
 
 
       const thumbnail =
-        snippet?.thumbnails?.high?.url ||
         snippet?.thumbnails?.medium?.url ||
         snippet?.thumbnails?.default?.url ||
         "";
@@ -526,59 +427,59 @@ function renderResults(
 
       const card =
         document.createElement(
-          "article"
+          "div"
         );
 
 
       card.className =
-        "card";
+        "result-card";
 
 
       card.innerHTML = `
 
         <img
-          class="thumbnail"
+          class="result-thumb"
           src="${thumbnail}"
           alt=""
           loading="lazy"
         >
 
-        <div class="card-content">
+        <div class="result-info">
 
-          <div class="video-title">
+          <div class="result-title">
             ${title}
           </div>
 
-          <div class="channel">
+          <div class="result-channel">
             ${channel}
           </div>
 
-          <button
-            class="play-button"
-            type="button"
-          >
-            ▶ Play
-          </button>
-
         </div>
+
+        <button
+          class="result-play"
+          type="button"
+        >
+          ▶
+        </button>
 
       `;
 
 
-      const playButton =
-        card.querySelector(
-          ".play-button"
+      card
+        .querySelector(
+          ".result-play"
+        )
+        .addEventListener(
+          "click",
+          function() {
+
+            playSong(
+              index
+            );
+
+          }
         );
-
-
-      playButton.addEventListener(
-        "click",
-        function() {
-
-          playSong(index);
-
-        }
-      );
 
 
       results.appendChild(
@@ -595,32 +496,37 @@ function renderResults(
    PLAY SONG
 ========================================= */
 
-function playSong(index) {
+function playSong(
+  index
+) {
 
   if (
-    !musicQueue.length ||
+    !queue.length ||
     index < 0 ||
-    index >= musicQueue.length
+    index >= queue.length
   ) {
 
     return;
+
   }
 
 
-  const video =
-    musicQueue[index];
+  const item =
+    queue[index];
 
 
   const videoId =
-    video?.id?.videoId;
+    item?.id?.videoId;
 
 
   const snippet =
-    video?.snippet || {};
+    item?.snippet || {};
 
 
   if (!videoId) {
+
     return;
+
   }
 
 
@@ -628,14 +534,18 @@ function playSong(index) {
     index;
 
 
-  const title =
-    snippet.title ||
-    "Relaxify";
+  songTitle.textContent =
+    cleanText(
+      snippet.title ||
+      "Hindi Music"
+    );
 
 
-  const channel =
-    snippet.channelTitle ||
-    "YouTube";
+  artistName.textContent =
+    cleanText(
+      snippet.channelTitle ||
+      "YouTube"
+    );
 
 
   const thumbnail =
@@ -645,58 +555,45 @@ function playSong(index) {
     "";
 
 
-  /*
-    Update player
-  */
-
-  trackTitle.textContent =
-    cleanText(title);
-
-
-  trackArtist.textContent =
-    cleanText(channel);
-
-
   if (thumbnail) {
 
-    albumArt.style.backgroundImage =
+    cover.style.backgroundImage =
       `url("${thumbnail}")`;
 
-    albumArt.style.backgroundSize =
-      "cover";
-
-    albumArt.style.backgroundPosition =
-      "center";
-
-    albumArt.textContent = "";
-
-  }
-  else {
-
-    albumArt.style.backgroundImage =
-      "";
-
-    albumArt.textContent =
-      "♪";
+    cover
+      .querySelector(
+        ".cover-note"
+      )
+      .style.display =
+      "none";
 
   }
 
 
-  /*
-    YouTube player
-  */
+  if (!playerReady) {
 
-  youtubePlayer.src =
-    `https://www.youtube.com/embed/${
-      encodeURIComponent(videoId)
-    }?autoplay=1&rel=0&playsinline=1`;
+    status.textContent =
+      "Player is loading...";
 
+    return;
 
-  youtubeContainer.style.display =
-    "block";
+  }
 
 
-  isPlaying = true;
+  player.loadVideoById(
+    videoId
+  );
+
+
+  player.setVolume(
+    Number(
+      volume.value
+    )
+  );
+
+
+  isPlaying =
+    true;
 
 
   playButton.textContent =
@@ -704,23 +601,7 @@ function playSong(index) {
 
 
   status.textContent =
-    `Playing ${currentIndex + 1} of ${musicQueue.length}`;
-
-
-  const playerSection =
-    document.getElementById(
-      "playerSection"
-    );
-
-
-  if (playerSection) {
-
-    playerSection.scrollIntoView({
-      behavior: "smooth",
-      block: "center"
-    });
-
-  }
+    `Playing ${index + 1} of ${queue.length}`;
 
 }
 
@@ -733,72 +614,44 @@ playButton.addEventListener(
   "click",
   function() {
 
+    if (!playerReady) {
+
+      status.textContent =
+        "Player is loading...";
+
+      return;
+
+    }
+
+
     if (
       currentIndex === -1
     ) {
 
-      if (musicQueue.length) {
+      /*
+        First Play:
+        Search Indian relaxing
+        Hindi music automatically.
+      */
 
-        playSong(0);
+      searchIndianMusic(
+        "Hindi relaxing songs"
+      );
 
-      }
 
       return;
-    }
 
-
-    /*
-      Reloading with autoplay is used
-      for reliable mobile playback.
-    */
-
-    const video =
-      musicQueue[currentIndex];
-
-
-    const videoId =
-      video?.id?.videoId;
-
-
-    if (!videoId) {
-      return;
     }
 
 
     if (isPlaying) {
 
-      youtubePlayer.contentWindow.postMessage(
-        JSON.stringify({
-          event: "command",
-          func: "pauseVideo",
-          args: []
-        }),
-        "*"
-      );
-
-
-      isPlaying = false;
-
-      playButton.textContent =
-        "▶";
+      player.pauseVideo();
 
     }
     else {
 
-      youtubePlayer.contentWindow.postMessage(
-        JSON.stringify({
-          event: "command",
-          func: "playVideo",
-          args: []
-        }),
-        "*"
-      );
-
-
-      isPlaying = true;
-
-      playButton.textContent =
-        "❚❚";
+      player.playVideo();
 
     }
 
@@ -822,8 +675,14 @@ nextButton.addEventListener(
 
 function playNext() {
 
-  if (!musicQueue.length) {
+  if (!queue.length) {
+
+    searchIndianMusic(
+      "Hindi relaxing songs"
+    );
+
     return;
+
   }
 
 
@@ -833,7 +692,7 @@ function playNext() {
 
   if (
     nextIndex >=
-    musicQueue.length
+    queue.length
   ) {
 
     nextIndex = 0;
@@ -856,8 +715,10 @@ previousButton.addEventListener(
   "click",
   function() {
 
-    if (!musicQueue.length) {
+    if (!queue.length) {
+
       return;
+
     }
 
 
@@ -870,7 +731,7 @@ previousButton.addEventListener(
     ) {
 
       previousIndex =
-        musicQueue.length - 1;
+        queue.length - 1;
 
     }
 
@@ -884,95 +745,564 @@ previousButton.addEventListener(
 
 
 /* =========================================
-   EMPTY RESULTS
+   VOLUME
 ========================================= */
 
-function showEmptyResults() {
+volume.addEventListener(
+  "input",
+  function() {
 
-  status.textContent =
-    "No results";
+    if (!playerReady) {
+
+      return;
+
+    }
 
 
-  results.innerHTML = `
+    player.setVolume(
+      Number(
+        volume.value
+      )
+    );
 
-    <div class="empty-state">
+  }
+);
 
-      <div>☾</div>
 
-      <h3>
-        No suitable music found
-      </h3>
+/* =========================================
+   PROGRESS
+========================================= */
 
-      <p>
-        Try another mood or search.
-      </p>
+progress.addEventListener(
+  "input",
+  function() {
 
-    </div>
+    if (!playerReady) {
 
-  `;
+      return;
+
+    }
+
+
+    const total =
+      player.getDuration();
+
+
+    if (!total) {
+
+      return;
+
+    }
+
+
+    const percentage =
+      Number(
+        progress.value
+      );
+
+
+    player.seekTo(
+      total *
+      percentage /
+      100,
+      true
+    );
+
+  }
+);
+
+
+/* =========================================
+   PROGRESS TIMER
+========================================= */
+
+function startProgress() {
+
+  stopProgress();
+
+
+  progressTimer =
+    setInterval(
+      function() {
+
+        if (
+          !playerReady
+        ) {
+
+          return;
+
+        }
+
+
+        const total =
+          player.getDuration();
+
+
+        const current =
+          player.getCurrentTime();
+
+
+        if (
+          !total ||
+          !Number.isFinite(
+            total
+          )
+        ) {
+
+          return;
+
+        }
+
+
+        progress.value =
+          (
+            current /
+            total
+          ) *
+          100;
+
+
+        currentTime.textContent =
+          formatTime(
+            current
+          );
+
+
+        duration.textContent =
+          formatTime(
+            total
+          );
+
+      },
+      500
+    );
+
+}
+
+
+function stopProgress() {
+
+  if (
+    progressTimer
+  ) {
+
+    clearInterval(
+      progressTimer
+    );
+
+    progressTimer =
+      null;
+
+  }
 
 }
 
 
 /* =========================================
-   PRETTY TITLES
+   VOICE CONTROL
 ========================================= */
 
-function getPrettyTitle(
-  query
+const SpeechRecognition =
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
+
+
+let recognition =
+  null;
+
+
+if (SpeechRecognition) {
+
+  recognition =
+    new SpeechRecognition();
+
+
+  recognition.lang =
+    "en-IN";
+
+
+  recognition.continuous =
+    false;
+
+
+  recognition.interimResults =
+    false;
+
+
+  recognition.onstart =
+    function() {
+
+      voiceStatus.textContent =
+        "Listening...";
+
+
+      voiceButton.classList.add(
+        "listening"
+      );
+
+    };
+
+
+  recognition.onend =
+    function() {
+
+      voiceButton.classList.remove(
+        "listening"
+      );
+
+    };
+
+
+  recognition.onerror =
+    function() {
+
+      voiceStatus.textContent =
+        "Couldn't hear that. Try again.";
+
+    };
+
+
+  recognition.onresult =
+    function(event) {
+
+      const command =
+        event.results[0][0]
+          .transcript
+          .toLowerCase()
+          .trim();
+
+
+      voiceStatus.textContent =
+        `Heard: "${command}"`;
+
+
+      handleVoiceCommand(
+        command
+      );
+
+    };
+
+}
+
+
+/* =========================================
+   VOICE BUTTONS
+========================================= */
+
+voiceButton.addEventListener(
+  "click",
+  startVoice
+);
+
+
+voiceControl.addEventListener(
+  "click",
+  startVoice
+);
+
+
+function startVoice() {
+
+  if (!recognition) {
+
+    voiceStatus.textContent =
+      "Voice control isn't supported in this browser.";
+
+    return;
+
+  }
+
+
+  try {
+
+    recognition.start();
+
+  }
+  catch(error) {
+
+    console.log(error);
+
+  }
+
+}
+
+
+/* =========================================
+   VOICE COMMANDS
+========================================= */
+
+function handleVoiceCommand(
+  command
 ) {
 
-  const q =
-    query.toLowerCase();
-
-
   if (
-    q.includes("synthwave") ||
-    q.includes("night drive")
+    command.includes(
+      "pause"
+    )
   ) {
 
-    return "🚗 Car Drive";
+    if (
+      playerReady
+    ) {
+
+      player.pauseVideo();
+
+    }
+
+    return;
 
   }
 
 
   if (
-    q.includes("deep sleep")
+    command.includes(
+      "resume"
+    ) ||
+    command === "play"
   ) {
 
-    return "🌙 Sleep";
+    if (
+      currentIndex === -1
+    ) {
+
+      searchIndianMusic(
+        "Hindi relaxing songs"
+      );
+
+    }
+    else if (
+      playerReady
+    ) {
+
+      player.playVideo();
+
+    }
+
+    return;
 
   }
 
 
   if (
-    q.includes("lofi")
+    command.includes(
+      "next"
+    ) ||
+    command.includes(
+      "skip"
+    )
   ) {
 
-    return "☕ Lo-fi";
+    playNext();
+
+    return;
 
   }
 
 
   if (
-    q.includes("meditation")
+    command.includes(
+      "previous"
+    ) ||
+    command.includes(
+      "back"
+    )
   ) {
 
-    return "🧘 Meditation";
+    previousButton.click();
+
+    return;
 
   }
 
 
   if (
-    q.includes("ambient")
+    command.includes(
+      "volume up"
+    )
   ) {
 
-    return "🌿 Relaxing";
+    changeVolume(
+      10
+    );
+
+    return;
 
   }
 
 
-  return `Results for "${query}"`;
+  if (
+    command.includes(
+      "volume down"
+    )
+  ) {
+
+    changeVolume(
+      -10
+    );
+
+    return;
+
+  }
+
+
+  if (
+    command.includes(
+      "mute"
+    )
+  ) {
+
+    volume.value =
+      0;
+
+    volume.dispatchEvent(
+      new Event(
+        "input"
+      )
+    );
+
+    return;
+
+  }
+
+
+  /*
+    Search by voice:
+    "play Arijit Singh"
+    "search Hindi romantic songs"
+  */
+
+  const playMatch =
+    command.match(
+      /^play (.+)$/
+    );
+
+
+  if (
+    playMatch &&
+    playMatch[1]
+  ) {
+
+    searchIndianMusic(
+      `${playMatch[1]} Hindi Indian song`
+    );
+
+    return;
+
+  }
+
+
+  const searchMatch =
+    command.match(
+      /^search (.+)$/
+    );
+
+
+  if (
+    searchMatch &&
+    searchMatch[1]
+  ) {
+
+    searchInput.value =
+      searchMatch[1];
+
+
+    searchIndianMusic(
+      searchMatch[1]
+    );
+
+    return;
+
+  }
+
+
+  voiceStatus.textContent =
+    "Try: play, pause, next, previous, volume up";
+
+}
+
+
+/* =========================================
+   CHANGE VOLUME
+========================================= */
+
+function changeVolume(
+  amount
+) {
+
+  let value =
+    Number(
+      volume.value
+    );
+
+
+  value +=
+    amount;
+
+
+  value =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        value
+      )
+    );
+
+
+  volume.value =
+    value;
+
+
+  volume.dispatchEvent(
+    new Event(
+      "input"
+    )
+  );
+
+}
+
+
+/* =========================================
+   FORMAT TIME
+========================================= */
+
+function formatTime(
+  seconds
+) {
+
+  if (
+    !Number.isFinite(
+      seconds
+    )
+  ) {
+
+    return "0:00";
+
+  }
+
+
+  const minutes =
+    Math.floor(
+      seconds / 60
+    );
+
+
+  const secs =
+    Math.floor(
+      seconds % 60
+    );
+
+
+  return (
+    minutes +
+    ":" +
+    String(
+      secs
+    ).padStart(
+      2,
+      "0"
+    )
+  );
 
 }
 
@@ -985,7 +1315,9 @@ function escapeHTML(
   text
 ) {
 
-  return String(text).replace(
+  return String(
+    text
+  ).replace(
     /[&<>"']/g,
     function(character) {
 
@@ -1018,32 +1350,16 @@ function cleanText(
   text
 ) {
 
-  const temp =
+  const textarea =
     document.createElement(
       "textarea"
     );
 
 
-  temp.innerHTML =
+  textarea.innerHTML =
     String(text);
 
 
-  return temp.value;
+  return textarea.value;
 
 }
-
-
-/* =========================================
-   INITIAL STATE
-========================================= */
-
-status.textContent =
-  "Ready when you are";
-
-
-trackTitle.textContent =
-  "Relaxify";
-
-
-trackArtist.textContent =
-  "Choose something to listen to";
