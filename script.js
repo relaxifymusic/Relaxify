@@ -1,15 +1,14 @@
-// ========================================
-// RELAXIFY
-// YouTube Search + Playlists + Player
-// ========================================
+/* =========================================
+   RELAXIFY MUSIC ENGINE
+========================================= */
 
 const API_URL =
   "https://relaxify-api.djboy4696.workers.dev";
 
 
-// ========================================
-// ELEMENTS
-// ========================================
+/* =========================================
+   ELEMENTS
+========================================= */
 
 const searchForm =
   document.getElementById("searchForm");
@@ -26,228 +25,58 @@ const resultsTitle =
 const status =
   document.getElementById("status");
 
-const playerContainer =
-  document.getElementById("playerContainer");
+const youtubeContainer =
+  document.getElementById("youtubeContainer");
 
-const playerArtwork =
-  document.getElementById("playerArtwork");
+const youtubePlayer =
+  document.getElementById("youtubePlayer");
 
-const playerTitle =
-  document.getElementById("playerTitle");
+const trackTitle =
+  document.getElementById("trackTitle");
 
-const playerChannel =
-  document.getElementById("playerChannel");
+const trackArtist =
+  document.getElementById("trackArtist");
 
-const playPause =
-  document.getElementById("playPause");
+const albumArt =
+  document.getElementById("albumArt");
 
-const previousTrack =
-  document.getElementById("previousTrack");
+const playButton =
+  document.getElementById("playButton");
 
-const nextTrack =
-  document.getElementById("nextTrack");
+const nextButton =
+  document.getElementById("nextButton");
 
-const progressBar =
-  document.getElementById("progressBar");
+const previousButton =
+  document.getElementById("previousButton");
 
 const currentTime =
   document.getElementById("currentTime");
 
-const totalTime =
-  document.getElementById("totalTime");
+const duration =
+  document.getElementById("duration");
 
-const volumeBar =
-  document.getElementById("volumeBar");
+const progressBar =
+  document.getElementById("progressBar");
 
 
-// ========================================
-// STATE
-// ========================================
+/* =========================================
+   MUSIC QUEUE
+========================================= */
 
-let youtube;
-
-let youtubeReady = false;
-
-let currentTracks = [];
+let musicQueue = [];
 
 let currentIndex = -1;
 
-let currentQuery = "";
-
-let progressTimer = null;
+let isPlaying = false;
 
 
-// ========================================
-// PLAYLISTS
-// ========================================
-
-const PLAYLISTS = {
-
-  relax: {
-    title: "Relaxing music",
-    query:
-      "relaxing peaceful music"
-  },
-
-  drive: {
-    title: "Car Drive",
-    query:
-      "best car drive music"
-  },
-
-  sleep: {
-    title: "Sleep music",
-    query:
-      "deep sleep relaxing music"
-  },
-
-  lofi: {
-    title: "Lo-fi",
-    query:
-      "lofi chill beats"
-  }
-
-};
-
-
-// ========================================
-// YOUTUBE API READY
-// ========================================
-
-window.onYouTubeIframeAPIReady =
-  function () {
-
-    youtubeReady = true;
-
-    createYouTubePlayer();
-
-  };
-
-
-// ========================================
-// CREATE PLAYER
-// ========================================
-
-function createYouTubePlayer() {
-
-  const playerElement =
-    document.getElementById(
-      "youtubePlayer"
-    );
-
-  if (!playerElement) {
-    return;
-  }
-
-
-  youtube =
-    new YT.Player(
-      "youtubePlayer",
-      {
-
-        width: "1",
-        height: "1",
-
-        videoId: "",
-
-        playerVars: {
-          autoplay: 0,
-          controls: 0,
-          rel: 0,
-          modestbranding: 1
-        },
-
-        events: {
-
-          onReady:
-            function (event) {
-
-              event.target.setVolume(70);
-
-            },
-
-          onStateChange:
-            handlePlayerStateChange,
-
-          onError:
-            function (event) {
-
-              console.error(
-                "YouTube error:",
-                event.data
-              );
-
-              status.textContent =
-                "Playback error";
-
-            }
-
-        }
-
-      }
-    );
-
-}
-
-
-// ========================================
-// PLAYER STATE
-// ========================================
-
-function handlePlayerStateChange(event) {
-
-  if (!youtube) {
-    return;
-  }
-
-
-  if (
-    event.data ===
-    YT.PlayerState.PLAYING
-  ) {
-
-    playPause.textContent =
-      "❚❚";
-
-    startProgress();
-
-  }
-
-
-  else if (
-    event.data ===
-    YT.PlayerState.PAUSED
-  ) {
-
-    playPause.textContent =
-      "▶";
-
-    stopProgress();
-
-  }
-
-
-  else if (
-    event.data ===
-    YT.PlayerState.ENDED
-  ) {
-
-    stopProgress();
-
-    playNext();
-
-  }
-
-}
-
-
-// ========================================
-// SEARCH
-// ========================================
+/* =========================================
+   SEARCH
+========================================= */
 
 searchForm.addEventListener(
   "submit",
-  function (event) {
+  function(event) {
 
     event.preventDefault();
 
@@ -262,112 +91,57 @@ searchForm.addEventListener(
     }
 
     searchYouTube(query);
-
   }
 );
 
 
-// ========================================
-// QUICK SEARCH
-// ========================================
+/* =========================================
+   MOOD BUTTONS
+========================================= */
 
 document
   .querySelectorAll(
-    ".quick-searches button"
+    ".quick-moods button, .playlist-card"
   )
-  .forEach(
-    function (button) {
+  .forEach(function(button) {
 
-      button.addEventListener(
-        "click",
-        function () {
+    button.addEventListener(
+      "click",
+      function() {
 
-          const query =
-            button.dataset.query;
+        const query =
+          button.dataset.query;
 
-          searchInput.value =
-            query;
+        if (!query) return;
 
-          searchYouTube(query);
+        searchInput.value = query;
 
-        }
-      );
+        searchYouTube(query);
+      }
+    );
 
-    }
-  );
+  });
 
 
-// ========================================
-// PLAYLIST BUTTONS
-// ========================================
+/* =========================================
+   SEARCH YOUTUBE
+========================================= */
 
-document
-  .querySelectorAll(
-    ".playlist-card"
-  )
-  .forEach(
-    function (button) {
-
-      button.addEventListener(
-        "click",
-        function () {
-
-          const playlistName =
-            button.dataset.playlist;
-
-          const playlist =
-            PLAYLISTS[playlistName];
-
-          if (!playlist) {
-            return;
-          }
-
-          searchInput.value =
-            playlist.query;
-
-          searchYouTube(
-            playlist.query,
-            playlist.title
-          );
-
-        }
-      );
-
-    }
-  );
-
-
-// ========================================
-// SEARCH YOUTUBE
-// ========================================
-
-async function searchYouTube(
-  query,
-  customTitle = ""
-) {
-
-  currentQuery =
-    query;
+async function searchYouTube(query) {
 
   status.textContent =
     "Searching...";
 
-
   resultsTitle.textContent =
-    customTitle ||
-    `Results for "${query}"`;
-
+    `"${query}"`;
 
   results.innerHTML = `
-
     <div class="empty-state">
 
-      <div class="empty-icon">
-        ◌
-      </div>
+      <div>◌</div>
 
       <h3>
-        Finding something peaceful...
+        Finding your music...
       </h3>
 
       <p>
@@ -375,16 +149,13 @@ async function searchYouTube(
       </p>
 
     </div>
-
   `;
 
 
   try {
 
     const url =
-      `${API_URL}/search?q=${
-        encodeURIComponent(query)
-      }`;
+      `${API_URL}/search?q=${encodeURIComponent(query)}`;
 
 
     const response =
@@ -394,7 +165,7 @@ async function searchYouTube(
     if (!response.ok) {
 
       throw new Error(
-        `HTTP ${response.status}`
+        "API Error: " + response.status
       );
 
     }
@@ -410,24 +181,17 @@ async function searchYouTube(
         : [];
 
 
-    currentTracks =
-      videos.filter(
-        function (video) {
+    const validVideos =
+      videos.filter(function(video) {
 
-          return Boolean(
-            video?.id?.videoId
-          );
+        return video &&
+          video.id &&
+          video.id.videoId;
 
-        }
-      );
+      });
 
 
-    currentIndex = -1;
-
-
-    if (
-      currentTracks.length === 0
-    ) {
+    if (validVideos.length === 0) {
 
       showEmptyResults();
 
@@ -435,52 +199,68 @@ async function searchYouTube(
     }
 
 
+    musicQueue =
+      validVideos;
+
+
+    currentIndex = -1;
+
+
     renderResults(
-      currentTracks
+      validVideos
     );
 
 
     status.textContent =
-      `${currentTracks.length} results`;
+      `${validVideos.length} songs found`;
+
+
+    /*
+      Start the first song automatically
+      when user clicked a playlist/mood.
+    */
+
+    playSong(0);
 
   }
 
   catch (error) {
 
-    console.error(error);
+    console.error(
+      "Relaxify error:",
+      error
+    );
+
 
     status.textContent =
-      "Search error";
+      "Search failed";
+
 
     results.innerHTML = `
 
       <div class="empty-state">
 
-        <div class="empty-icon">
-          !
-        </div>
+        <div>!</div>
 
         <h3>
-          Something went wrong
+          Unable to search
         </h3>
 
         <p>
-          Please check your connection
-          and try again.
+          Please try again in a moment.
         </p>
 
       </div>
 
     `;
-
   }
 
 }
 
 
-// ========================================
-// RENDER RESULTS
-// ========================================
+/* =========================================
+   RENDER RESULTS
+========================================= */
 
 function renderResults(videos) {
 
@@ -488,7 +268,7 @@ function renderResults(videos) {
 
 
   videos.forEach(
-    function (video, index) {
+    function(video, index) {
 
       const videoId =
         video?.id?.videoId;
@@ -498,15 +278,13 @@ function renderResults(videos) {
         video?.snippet || {};
 
 
-      if (!videoId) {
-        return;
-      }
+      if (!videoId) return;
 
 
       const title =
         escapeHTML(
           snippet.title ||
-          "Untitled"
+          "Unknown song"
         );
 
 
@@ -565,17 +343,17 @@ function renderResults(videos) {
       `;
 
 
-      const playButton =
+      const play =
         card.querySelector(
           ".play-button"
         );
 
 
-      playButton.addEventListener(
+      play.addEventListener(
         "click",
-        function () {
+        function() {
 
-          playTrack(index);
+          playSong(index);
 
         }
       );
@@ -591,28 +369,18 @@ function renderResults(videos) {
 }
 
 
-// ========================================
-// PLAY TRACK
-// ========================================
+/* =========================================
+   PLAY SONG
+========================================= */
 
-function playTrack(index) {
+function playSong(index) {
 
   if (
-    !currentTracks[index]
+    !musicQueue.length ||
+    index < 0 ||
+    index >= musicQueue.length
   ) {
-    return;
-  }
 
-
-  const video =
-    currentTracks[index];
-
-
-  const videoId =
-    video?.id?.videoId;
-
-
-  if (!videoId) {
     return;
   }
 
@@ -621,13 +389,24 @@ function playTrack(index) {
     index;
 
 
+  const video =
+    musicQueue[index];
+
+
+  const videoId =
+    video?.id?.videoId;
+
+
   const snippet =
-    video.snippet || {};
+    video?.snippet || {};
+
+
+  if (!videoId) return;
 
 
   const title =
     snippet.title ||
-    "Untitled";
+    "Relaxify";
 
 
   const channel =
@@ -642,255 +421,186 @@ function playTrack(index) {
     "";
 
 
-  updatePlayerUI(
-    title,
-    channel,
-    thumbnail
-  );
+  /* Update player */
+
+  trackTitle.textContent =
+    cleanText(title);
 
 
-  playerContainer
-    .classList
-    .remove("hidden");
+  trackArtist.textContent =
+    cleanText(channel);
 
 
-  playerContainer
+  if (thumbnail) {
+
+    albumArt.style.backgroundImage =
+      `url("${thumbnail}")`;
+
+    albumArt.style.backgroundSize =
+      "cover";
+
+    albumArt.style.backgroundPosition =
+      "center";
+
+    albumArt.textContent =
+      "";
+
+  }
+  else {
+
+    albumArt.style.backgroundImage =
+      "";
+
+    albumArt.textContent =
+      "♪";
+
+  }
+
+
+  /* YouTube */
+
+  youtubePlayer.src =
+    `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0&enablejsapi=1&playsinline=1`;
+
+
+  youtubeContainer.style.display =
+    "block";
+
+
+  isPlaying = true;
+
+
+  playButton.textContent =
+    "❚❚";
+
+
+  status.textContent =
+    `Playing ${currentIndex + 1} of ${musicQueue.length}`;
+
+
+  /* Scroll player into view */
+
+  document
+    .getElementById("playerSection")
     .scrollIntoView({
       behavior: "smooth",
       block: "center"
     });
 
-
-  if (!youtubeReady) {
-
-    status.textContent =
-      "Player loading...";
-
-    return;
-  }
+}
 
 
-  if (!youtube) {
+/* =========================================
+   PLAY / PAUSE
+========================================= */
 
-    createYouTubePlayer();
+playButton.addEventListener(
+  "click",
+  function() {
 
-    setTimeout(
-      function () {
+    if (currentIndex === -1) {
 
-        playYouTubeVideo(
-          videoId
-        );
+      if (musicQueue.length) {
 
-      },
-      1000
+        playSong(0);
+
+      }
+
+      return;
+    }
+
+
+    /*
+      YouTube iframe API command.
+      This works after the iframe has loaded.
+    */
+
+    const command =
+      isPlaying
+        ? "pauseVideo"
+        : "playVideo";
+
+
+    youtubePlayer.contentWindow.postMessage(
+      JSON.stringify({
+        event: "command",
+        func: command,
+        args: []
+      }),
+      "*"
     );
 
-    return;
-  }
+
+    isPlaying =
+      !isPlaying;
 
 
-  playYouTubeVideo(
-    videoId
-  );
-
-}
-
-
-// ========================================
-// PLAY YOUTUBE VIDEO
-// ========================================
-
-function playYouTubeVideo(
-  videoId
-) {
-
-  if (
-    !youtube ||
-    !youtube.loadVideoById
-  ) {
-    return;
-  }
-
-
-  youtube.loadVideoById(
-    videoId
-  );
-
-
-  youtube.setVolume(
-    Number(volumeBar.value)
-  );
-
-
-  playPause.textContent =
-    "❚❚";
-
-
-  status.textContent =
-    "Playing";
-
-
-  startProgress();
-
-}
-
-
-// ========================================
-// UPDATE PLAYER UI
-// ========================================
-
-function updatePlayerUI(
-  title,
-  channel,
-  thumbnail
-) {
-
-  playerTitle.textContent =
-    title;
-
-
-  playerChannel.textContent =
-    channel;
-
-
-  if (thumbnail) {
-
-    playerArtwork.src =
-      thumbnail;
-
-  }
-
-
-  progressBar.value =
-    0;
-
-
-  currentTime.textContent =
-    "0:00";
-
-
-  totalTime.textContent =
-    "0:00";
-
-}
-
-
-// ========================================
-// PLAY / PAUSE
-// ========================================
-
-playPause.addEventListener(
-  "click",
-  function () {
-
-    if (!youtube) {
-      return;
-    }
-
-
-    const state =
-      youtube.getPlayerState();
-
-
-    if (
-      state ===
-      YT.PlayerState.PLAYING
-    ) {
-
-      youtube.pauseVideo();
-
-      playPause.textContent =
-        "▶";
-
-    }
-
-    else {
-
-      youtube.playVideo();
-
-      playPause.textContent =
-        "❚❚";
-
-    }
+    playButton.textContent =
+      isPlaying
+        ? "❚❚"
+        : "▶";
 
   }
 );
 
 
-// ========================================
-// NEXT
-// ========================================
+/* =========================================
+   NEXT
+========================================= */
 
-nextTrack.addEventListener(
+nextButton.addEventListener(
   "click",
-  function () {
+  function() {
 
-    playNext();
+    if (!musicQueue.length) return;
+
+
+    let nextIndex =
+      currentIndex + 1;
+
+
+    if (
+      nextIndex >=
+      musicQueue.length
+    ) {
+
+      nextIndex = 0;
+
+    }
+
+
+    playSong(
+      nextIndex
+    );
 
   }
 );
 
 
-function playNext() {
+/* =========================================
+   PREVIOUS
+========================================= */
 
-  if (
-    currentTracks.length === 0
-  ) {
-    return;
-  }
-
-
-  let nextIndex =
-    currentIndex + 1;
-
-
-  if (
-    nextIndex >=
-    currentTracks.length
-  ) {
-
-    nextIndex = 0;
-
-  }
-
-
-  playTrack(
-    nextIndex
-  );
-
-}
-
-
-// ========================================
-// PREVIOUS
-// ========================================
-
-previousTrack.addEventListener(
+previousButton.addEventListener(
   "click",
-  function () {
+  function() {
 
-    if (
-      currentTracks.length === 0
-    ) {
-      return;
-    }
+    if (!musicQueue.length) return;
 
 
     let previousIndex =
       currentIndex - 1;
 
 
-    if (
-      previousIndex < 0
-    ) {
+    if (previousIndex < 0) {
 
       previousIndex =
-        currentTracks.length - 1;
+        musicQueue.length - 1;
 
     }
 
 
-    playTrack(
+    playSong(
       previousIndex
     );
 
@@ -898,166 +608,93 @@ previousTrack.addEventListener(
 );
 
 
-// ========================================
-// PROGRESS
-// ========================================
+/* =========================================
+   YOUTUBE MESSAGE LISTENER
+   Detect video ending
+========================================= */
 
-function startProgress() {
+window.addEventListener(
+  "message",
+  function(event) {
 
-  stopProgress();
-
-
-  progressTimer =
-    setInterval(
-      function () {
-
-        if (!youtube) {
-          return;
-        }
+    if (!event.data) return;
 
 
-        const duration =
-          youtube.getDuration();
+    let data;
 
 
-        const current =
-          youtube.getCurrentTime();
+    try {
 
+      data =
+        typeof event.data === "string"
+          ? JSON.parse(event.data)
+          : event.data;
 
-        if (
-          !duration ||
-          duration <= 0
-        ) {
-          return;
-        }
+    }
 
+    catch {
 
-        progressBar.value =
-          (current / duration) * 100;
-
-
-        currentTime.textContent =
-          formatTime(current);
-
-
-        totalTime.textContent =
-          formatTime(duration);
-
-      },
-      500
-    );
-
-}
-
-
-function stopProgress() {
-
-  if (progressTimer) {
-
-    clearInterval(
-      progressTimer
-    );
-
-    progressTimer =
-      null;
-
-  }
-
-}
-
-
-// ========================================
-// SEEK
-// ========================================
-
-progressBar.addEventListener(
-  "input",
-  function () {
-
-    if (!youtube) {
       return;
+
     }
 
 
-    const duration =
-      youtube.getDuration();
-
+    /*
+      When YouTube sends state = 0,
+      video has ended.
+    */
 
     if (
-      !duration ||
-      duration <= 0
+      data.event === "onStateChange" &&
+      data.info === 0
     ) {
-      return;
+
+      playNextAutomatically();
+
     }
-
-
-    const newTime =
-      duration *
-      (Number(progressBar.value) / 100);
-
-
-    youtube.seekTo(
-      newTime,
-      true
-    );
 
   }
 );
 
 
-// ========================================
-// VOLUME
-// ========================================
+/* =========================================
+   AUTO NEXT
+========================================= */
 
-volumeBar.addEventListener(
-  "input",
-  function () {
+function playNextAutomatically() {
 
-    if (!youtube) {
-      return;
-    }
+  if (!musicQueue.length) return;
 
 
-    youtube.setVolume(
-      Number(volumeBar.value)
-    );
+  let nextIndex =
+    currentIndex + 1;
+
+
+  /*
+    Reached end of playlist?
+    Start from first song again.
+  */
+
+  if (
+    nextIndex >=
+    musicQueue.length
+  ) {
+
+    nextIndex = 0;
 
   }
-);
 
 
-// ========================================
-// TIME FORMAT
-// ========================================
-
-function formatTime(seconds) {
-
-  seconds =
-    Math.floor(
-      Number(seconds) || 0
-    );
-
-
-  const minutes =
-    Math.floor(
-      seconds / 60
-    );
-
-
-  const remaining =
-    seconds % 60;
-
-
-  return `${minutes}:${String(
-    remaining
-  ).padStart(2, "0")}`;
+  playSong(
+    nextIndex
+  );
 
 }
 
 
-// ========================================
-// EMPTY RESULTS
-// ========================================
+/* =========================================
+   EMPTY RESULTS
+========================================= */
 
 function showEmptyResults() {
 
@@ -1069,16 +706,14 @@ function showEmptyResults() {
 
     <div class="empty-state">
 
-      <div class="empty-icon">
-        ☾
-      </div>
+      <div>☾</div>
 
       <h3>
-        No results found
+        No music found
       </h3>
 
       <p>
-        Try another search.
+        Try searching for another song.
       </p>
 
     </div>
@@ -1088,15 +723,15 @@ function showEmptyResults() {
 }
 
 
-// ========================================
-// SECURITY
-// ========================================
+/* =========================================
+   SECURITY
+========================================= */
 
 function escapeHTML(text) {
 
   return String(text).replace(
     /[&<>"']/g,
-    function (character) {
+    function(character) {
 
       const entities = {
 
@@ -1119,9 +754,36 @@ function escapeHTML(text) {
 }
 
 
-// ========================================
-// INITIAL STATUS
-// ========================================
+/* =========================================
+   CLEAN TEXT
+========================================= */
+
+function cleanText(text) {
+
+  const temp =
+    document.createElement(
+      "textarea"
+    );
+
+
+  temp.innerHTML =
+    String(text);
+
+
+  return temp.value;
+
+}
+
+
+/* =========================================
+   INITIAL STATE
+========================================= */
 
 status.textContent =
   "Ready when you are";
+
+trackTitle.textContent =
+  "Relaxify";
+
+trackArtist.textContent =
+  "Choose something to listen to";
