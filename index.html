@@ -5,61 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#080b14">
 
-  <title>Relaxify — Find Your Peace</title>
-  <meta name="description"
-        content="Relaxify — relaxing music, car drive music, sleep sounds and peaceful moments.">
+  <title>Relaxify — Music for Your Mood</title>
 
   <link rel="stylesheet" href="style.css">
-
-  <!-- YouTube official player API -->
-  <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 
 <body>
 
-  <!-- ================= HEADER ================= -->
+  <!-- HEADER -->
+  <header class="topbar">
 
-  <header class="navbar">
-
-    <a href="#home" class="logo">
-      <span class="logo-icon">♪</span>
+    <a href="#home" class="brand">
+      <span class="brand-icon">♪</span>
       <span>Relaxify</span>
     </a>
 
     <nav>
       <a href="#home">Home</a>
-      <a href="#discover">Discover</a>
       <a href="#playlists">Playlists</a>
+      <a href="#discover">Discover</a>
     </nav>
+
+    <a
+      class="instagram"
+      href="https://instagram.com/sakil_miah_"
+      target="_blank"
+      rel="noopener"
+    >
+      Instagram
+    </a>
 
   </header>
 
 
+  <!-- HERO -->
   <main>
 
-    <!-- ================= HERO ================= -->
-
     <section class="hero" id="home">
+
+      <div class="hero-glow"></div>
 
       <div class="hero-content">
 
         <p class="eyebrow">
-          SLOW DOWN • BREATHE • LISTEN
+          MUSIC FOR QUIETER MOMENTS
         </p>
 
         <h1>
-          Find your
-          <span>peace.</span>
+          Relax.
+          <span>Listen.</span>
+          Repeat.
         </h1>
 
-        <p class="hero-description">
-          Relaxing music, peaceful sounds and perfect
-          playlists for every journey.
+        <p class="hero-text">
+          Discover relaxing music, peaceful sounds,
+          lo-fi and perfect songs for your journey.
         </p>
 
 
         <!-- SEARCH -->
-
         <form class="search-box" id="searchForm">
 
           <span class="search-icon">⌕</span>
@@ -78,38 +82,292 @@
         </form>
 
 
-        <!-- QUICK SEARCH -->
+        <!-- QUICK MOODS -->
+        <div class="quick-moods">
 
-        <div class="quick-searches" id="moods">
-
-          <button
-            type="button"
-            data-query="relaxing music"
-          >
+          <button data-query="relaxing music">
             🌿 Relax
           </button>
 
-          <button
-            type="button"
-            data-query="sleep music"
-          >
+          <button data-query="car driving music">
+            🚗 Car Drive
+          </button>
+
+          <button data-query="sleep music">
             🌙 Sleep
           </button>
 
-          <button
-            type="button"
-            data-query="lofi chill music"
-          >
+          <button data-query="lofi chill music">
             ☕ Lo-fi
           </button>
 
-          <button
-            type="button"
-            data-query="meditation music"
-          >
+          <button data-query="meditation music">
             🧘 Meditation
           </button>
 
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- NOW PLAYING -->
+    <section class="now-playing" id="playerSection">
+
+      <div class="album-art" id="albumArt">
+        ♪
+      </div>
+
+      <div class="track-info">
+
+        <span class="playing-label">
+          NOW PLAYING
+        </span>
+
+        <h2 id="trackTitle">
+          Relaxify
+        </h2>
+
+        <p id="trackArtist">
+          Choose something to listen to
+        </p>
+
+      </div>
+
+      <div class="player-controls">
+
+        <button id="previousButton" aria-label="Previous">
+          ⏮
+        </button>
+
+        <button
+          id="playButton"
+          class="main-play"
+          aria-label="Play"
+        >
+          ▶
+        </button>
+
+        <button id="nextButton" aria-label="Next">
+          ⏭
+        </button>
+
+      </div>
+
+      <div class="progress-area">
+
+        <span id="currentTime">
+          0:00
+        </span>
+
+        <input
+          id="progressBar"
+          type="range"
+          min="0"
+          max="100"
+          value="0"
+        >
+
+        <span id="duration">
+          0:00
+        </span>
+
+      </div>
+
+    </section>
+
+
+    <!-- PLAYLISTS -->
+    <section class="section" id="playlists">
+
+      <div class="section-heading">
+
+        <div>
+          <p class="eyebrow">
+            PLAYLISTS
+          </p>
+
+          <h2>
+            Choose your mood
+          </h2>
+        </div>
+
+      </div>
+
+
+      <div class="playlist-grid">
+
+        <button
+          class="playlist-card relax-card"
+          data-query="relaxing music"
+        >
+
+          <span class="playlist-icon">
+            🌿
+          </span>
+
+          <span>
+            <strong>Relaxing</strong>
+            <small>Peaceful & calm</small>
+          </span>
+
+          <b>▶</b>
+
+        </button>
+
+
+        <button
+          class="playlist-card drive-card"
+          data-query="car drive music"
+        >
+
+          <span class="playlist-icon">
+            🚗
+          </span>
+
+          <span>
+            <strong>Car Drive</strong>
+            <small>Road trip vibes</small>
+          </span>
+
+          <b>▶</b>
+
+        </button>
+
+
+        <button
+          class="playlist-card sleep-card"
+          data-query="deep sleep music"
+        >
+
+          <span class="playlist-icon">
+            🌙
+          </span>
+
+          <span>
+            <strong>Sleep</strong>
+            <small>Slow & peaceful</small>
+          </span>
+
+          <b>▶</b>
+
+        </button>
+
+
+        <button
+          class="playlist-card lofi-card"
+          data-query="lofi chill music"
+        >
+
+          <span class="playlist-icon">
+            ☕
+          </span>
+
+          <span>
+            <strong>Lo-fi</strong>
+            <small>Chill & focus</small>
+          </span>
+
+          <b>▶</b>
+
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- DISCOVER -->
+    <section class="section discover" id="discover">
+
+      <div class="section-heading">
+
+        <div>
+          <p class="eyebrow">
+            DISCOVER
+          </p>
+
+          <h2 id="resultsTitle">
+            Relaxify picks
+          </h2>
+        </div>
+
+        <span id="status">
+          Ready
+        </span>
+
+      </div>
+
+
+      <!-- RESULTS -->
+      <div
+        class="results"
+        id="results"
+      >
+
+        <div class="empty-state">
+
+          <div>
+            ♪
+          </div>
+
+          <h3>
+            Your music is waiting
+          </h3>
+
+          <p>
+            Search for a song or choose a playlist above.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- HIDDEN YOUTUBE PLAYER -->
+    <div
+      class="youtube-container"
+      id="youtubeContainer"
+    >
+
+      <iframe
+        id="youtubePlayer"
+        title="Relaxify Music Player"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+
+    </div>
+
+  </main>
+
+
+  <!-- FOOTER -->
+  <footer>
+
+    <div>
+      <strong>Relaxify</strong>
+      <span>Made for quieter moments.</span>
+    </div>
+
+    <a
+      href="https://instagram.com/sakil_miah_"
+      target="_blank"
+      rel="noopener"
+    >
+      Made by Sakil Miah · @sakil_miah_
+    </a>
+
+  </footer>
+
+
+  <script src="script.js"></script>
+
+</body>
+</html>
           <button
             type="button"
             data-query="nature relaxing sounds"
