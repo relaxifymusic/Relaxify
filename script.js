@@ -49,15 +49,6 @@ const nextButton =
 const previousButton =
   document.getElementById("previousButton");
 
-const currentTime =
-  document.getElementById("currentTime");
-
-const duration =
-  document.getElementById("duration");
-
-const progressBar =
-  document.getElementById("progressBar");
-
 
 /* =========================================
    MUSIC QUEUE
@@ -71,7 +62,31 @@ let isPlaying = false;
 
 
 /* =========================================
-   SEARCH
+   SPECIAL PLAYLIST SEARCHES
+========================================= */
+
+const PLAYLIST_QUERIES = {
+
+  relax:
+    "calm ambient instrumental music no vocals",
+
+  drive:
+    "night drive synthwave chill electronic music",
+
+  sleep:
+    "deep sleep ambient instrumental music no vocals",
+
+  lofi:
+    "lofi hip hop instrumental chill beats no vocals",
+
+  meditation:
+    "peaceful meditation instrumental ambient music"
+
+};
+
+
+/* =========================================
+   SEARCH FORM
 ========================================= */
 
 searchForm.addEventListener(
@@ -91,12 +106,13 @@ searchForm.addEventListener(
     }
 
     searchYouTube(query);
+
   }
 );
 
 
 /* =========================================
-   MOOD BUTTONS
+   MOOD / PLAYLIST BUTTONS
 ========================================= */
 
 document
@@ -109,14 +125,66 @@ document
       "click",
       function() {
 
-        const query =
-          button.dataset.query;
+        let query =
+          button.dataset.query || "";
 
-        if (!query) return;
+        const text =
+          button.textContent.toLowerCase();
 
-        searchInput.value = query;
 
-        searchYouTube(query);
+        if (text.includes("relax")) {
+
+          query =
+            PLAYLIST_QUERIES.relax;
+
+        }
+
+        else if (
+          text.includes("car")
+        ) {
+
+          query =
+            PLAYLIST_QUERIES.drive;
+
+        }
+
+        else if (
+          text.includes("sleep")
+        ) {
+
+          query =
+            PLAYLIST_QUERIES.sleep;
+
+        }
+
+        else if (
+          text.includes("lo-fi") ||
+          text.includes("lofi")
+        ) {
+
+          query =
+            PLAYLIST_QUERIES.lofi;
+
+        }
+
+        else if (
+          text.includes("meditation")
+        ) {
+
+          query =
+            PLAYLIST_QUERIES.meditation;
+
+        }
+
+
+        searchInput.value =
+          query;
+
+
+        searchYouTube(
+          query
+        );
+
       }
     );
 
@@ -132,30 +200,36 @@ async function searchYouTube(query) {
   status.textContent =
     "Searching...";
 
+
   resultsTitle.textContent =
-    `"${query}"`;
+    getPrettyTitle(query);
+
 
   results.innerHTML = `
+
     <div class="empty-state">
 
       <div>◌</div>
 
       <h3>
-        Finding your music...
+        Finding something peaceful...
       </h3>
 
       <p>
-        Please wait a moment.
+        Searching for the right music.
       </p>
 
     </div>
+
   `;
 
 
   try {
 
     const url =
-      `${API_URL}/search?q=${encodeURIComponent(query)}`;
+      `${API_URL}/search?q=${
+        encodeURIComponent(query)
+      }`;
 
 
     const response =
@@ -165,7 +239,8 @@ async function searchYouTube(query) {
     if (!response.ok) {
 
       throw new Error(
-        "API Error: " + response.status
+        "API Error: " +
+        response.status
       );
 
     }
@@ -175,23 +250,51 @@ async function searchYouTube(query) {
       await response.json();
 
 
-    const videos =
+    let videos =
       Array.isArray(data.items)
         ? data.items
         : [];
 
 
-    const validVideos =
-      videos.filter(function(video) {
+    /*
+      Remove invalid results.
+    */
 
-        return video &&
-          video.id &&
-          video.id.videoId;
+    videos =
+      videos.filter(
+        function(video) {
 
-      });
+          return Boolean(
+            video &&
+            video.id &&
+            video.id.videoId
+          );
+
+        }
+      );
 
 
-    if (validVideos.length === 0) {
+    /*
+      Extra filtering for special playlists.
+      This reduces irrelevant videos.
+    */
+
+    if (
+      isSpecialPlaylist(query)
+    ) {
+
+      videos =
+        filterMusicResults(
+          videos,
+          query
+        );
+
+    }
+
+
+    if (
+      videos.length === 0
+    ) {
 
       showEmptyResults();
 
@@ -200,34 +303,35 @@ async function searchYouTube(query) {
 
 
     musicQueue =
-      validVideos;
+      videos;
 
 
     currentIndex = -1;
 
+    isPlaying = false;
+
 
     renderResults(
-      validVideos
+      videos
     );
 
 
     status.textContent =
-      `${validVideos.length} songs found`;
+      `${videos.length} songs found`;
 
 
     /*
-      Start the first song automatically
-      when user clicked a playlist/mood.
+      IMPORTANT:
+      Do NOT automatically play
+      the first result.
     */
-
-    playSong(0);
 
   }
 
   catch (error) {
 
     console.error(
-      "Relaxify error:",
+      "Relaxify search error:",
       error
     );
 
@@ -247,13 +351,127 @@ async function searchYouTube(query) {
         </h3>
 
         <p>
-          Please try again in a moment.
+          Please check your connection
+          and try again.
         </p>
 
       </div>
 
     `;
+
   }
+
+}
+
+
+/* =========================================
+   SPECIAL PLAYLIST DETECTION
+========================================= */
+
+function isSpecialPlaylist(query) {
+
+  const q =
+    query.toLowerCase();
+
+
+  return (
+    q.includes("ambient") ||
+    q.includes("synthwave") ||
+    q.includes("night drive") ||
+    q.includes("deep sleep") ||
+    q.includes("lofi") ||
+    q.includes("meditation")
+  );
+
+}
+
+
+/* =========================================
+   FILTER MUSIC RESULTS
+========================================= */
+
+function filterMusicResults(
+  videos,
+  query
+) {
+
+  const q =
+    query.toLowerCase();
+
+
+  const unwanted = [
+
+    "bird",
+
+    "birds",
+
+    "chirping",
+
+    "sparrow",
+
+    "parrot",
+
+    "rooster",
+
+    "animal",
+
+    "forest sounds",
+
+    "nature sounds",
+
+    "rain sounds",
+
+    "asmr",
+
+    "podcast",
+
+    "news",
+
+    "interview",
+
+    "reaction",
+
+    "shorts"
+
+  ];
+
+
+  /*
+    Keep results that don't contain
+    unwanted nature/content keywords.
+  */
+
+  const filtered =
+    videos.filter(
+      function(video) {
+
+        const title =
+          String(
+            video?.snippet?.title || ""
+          ).toLowerCase();
+
+
+        return !unwanted.some(
+          function(word) {
+
+            return title.includes(word);
+
+          }
+        );
+
+      }
+    );
+
+
+  /*
+    If filtering removed everything,
+    use original results rather than
+    showing an empty page.
+  */
+
+  return filtered.length
+    ? filtered
+    : videos;
 
 }
 
@@ -262,7 +480,9 @@ async function searchYouTube(query) {
    RENDER RESULTS
 ========================================= */
 
-function renderResults(videos) {
+function renderResults(
+  videos
+) {
 
   results.innerHTML = "";
 
@@ -278,7 +498,9 @@ function renderResults(videos) {
         video?.snippet || {};
 
 
-      if (!videoId) return;
+      if (!videoId) {
+        return;
+      }
 
 
       const title =
@@ -343,13 +565,13 @@ function renderResults(videos) {
       `;
 
 
-      const play =
+      const playButton =
         card.querySelector(
           ".play-button"
         );
 
 
-      play.addEventListener(
+      playButton.addEventListener(
         "click",
         function() {
 
@@ -385,10 +607,6 @@ function playSong(index) {
   }
 
 
-  currentIndex =
-    index;
-
-
   const video =
     musicQueue[index];
 
@@ -401,7 +619,13 @@ function playSong(index) {
     video?.snippet || {};
 
 
-  if (!videoId) return;
+  if (!videoId) {
+    return;
+  }
+
+
+  currentIndex =
+    index;
 
 
   const title =
@@ -421,7 +645,9 @@ function playSong(index) {
     "";
 
 
-  /* Update player */
+  /*
+    Update player
+  */
 
   trackTitle.textContent =
     cleanText(title);
@@ -442,8 +668,7 @@ function playSong(index) {
     albumArt.style.backgroundPosition =
       "center";
 
-    albumArt.textContent =
-      "";
+    albumArt.textContent = "";
 
   }
   else {
@@ -457,10 +682,14 @@ function playSong(index) {
   }
 
 
-  /* YouTube */
+  /*
+    YouTube player
+  */
 
   youtubePlayer.src =
-    `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0&enablejsapi=1&playsinline=1`;
+    `https://www.youtube.com/embed/${
+      encodeURIComponent(videoId)
+    }?autoplay=1&rel=0&playsinline=1`;
 
 
   youtubeContainer.style.display =
@@ -478,14 +707,20 @@ function playSong(index) {
     `Playing ${currentIndex + 1} of ${musicQueue.length}`;
 
 
-  /* Scroll player into view */
+  const playerSection =
+    document.getElementById(
+      "playerSection"
+    );
 
-  document
-    .getElementById("playerSection")
-    .scrollIntoView({
+
+  if (playerSection) {
+
+    playerSection.scrollIntoView({
       behavior: "smooth",
       block: "center"
     });
+
+  }
 
 }
 
@@ -498,7 +733,9 @@ playButton.addEventListener(
   "click",
   function() {
 
-    if (currentIndex === -1) {
+    if (
+      currentIndex === -1
+    ) {
 
       if (musicQueue.length) {
 
@@ -511,34 +748,59 @@ playButton.addEventListener(
 
 
     /*
-      YouTube iframe API command.
-      This works after the iframe has loaded.
+      Reloading with autoplay is used
+      for reliable mobile playback.
     */
 
-    const command =
-      isPlaying
-        ? "pauseVideo"
-        : "playVideo";
+    const video =
+      musicQueue[currentIndex];
 
 
-    youtubePlayer.contentWindow.postMessage(
-      JSON.stringify({
-        event: "command",
-        func: command,
-        args: []
-      }),
-      "*"
-    );
+    const videoId =
+      video?.id?.videoId;
 
 
-    isPlaying =
-      !isPlaying;
+    if (!videoId) {
+      return;
+    }
 
 
-    playButton.textContent =
-      isPlaying
-        ? "❚❚"
-        : "▶";
+    if (isPlaying) {
+
+      youtubePlayer.contentWindow.postMessage(
+        JSON.stringify({
+          event: "command",
+          func: "pauseVideo",
+          args: []
+        }),
+        "*"
+      );
+
+
+      isPlaying = false;
+
+      playButton.textContent =
+        "▶";
+
+    }
+    else {
+
+      youtubePlayer.contentWindow.postMessage(
+        JSON.stringify({
+          event: "command",
+          func: "playVideo",
+          args: []
+        }),
+        "*"
+      );
+
+
+      isPlaying = true;
+
+      playButton.textContent =
+        "❚❚";
+
+    }
 
   }
 );
@@ -552,128 +814,22 @@ nextButton.addEventListener(
   "click",
   function() {
 
-    if (!musicQueue.length) return;
-
-
-    let nextIndex =
-      currentIndex + 1;
-
-
-    if (
-      nextIndex >=
-      musicQueue.length
-    ) {
-
-      nextIndex = 0;
-
-    }
-
-
-    playSong(
-      nextIndex
-    );
+    playNext();
 
   }
 );
 
 
-/* =========================================
-   PREVIOUS
-========================================= */
+function playNext() {
 
-previousButton.addEventListener(
-  "click",
-  function() {
-
-    if (!musicQueue.length) return;
-
-
-    let previousIndex =
-      currentIndex - 1;
-
-
-    if (previousIndex < 0) {
-
-      previousIndex =
-        musicQueue.length - 1;
-
-    }
-
-
-    playSong(
-      previousIndex
-    );
-
+  if (!musicQueue.length) {
+    return;
   }
-);
-
-
-/* =========================================
-   YOUTUBE MESSAGE LISTENER
-   Detect video ending
-========================================= */
-
-window.addEventListener(
-  "message",
-  function(event) {
-
-    if (!event.data) return;
-
-
-    let data;
-
-
-    try {
-
-      data =
-        typeof event.data === "string"
-          ? JSON.parse(event.data)
-          : event.data;
-
-    }
-
-    catch {
-
-      return;
-
-    }
-
-
-    /*
-      When YouTube sends state = 0,
-      video has ended.
-    */
-
-    if (
-      data.event === "onStateChange" &&
-      data.info === 0
-    ) {
-
-      playNextAutomatically();
-
-    }
-
-  }
-);
-
-
-/* =========================================
-   AUTO NEXT
-========================================= */
-
-function playNextAutomatically() {
-
-  if (!musicQueue.length) return;
 
 
   let nextIndex =
     currentIndex + 1;
 
-
-  /*
-    Reached end of playlist?
-    Start from first song again.
-  */
 
   if (
     nextIndex >=
@@ -693,6 +849,41 @@ function playNextAutomatically() {
 
 
 /* =========================================
+   PREVIOUS
+========================================= */
+
+previousButton.addEventListener(
+  "click",
+  function() {
+
+    if (!musicQueue.length) {
+      return;
+    }
+
+
+    let previousIndex =
+      currentIndex - 1;
+
+
+    if (
+      previousIndex < 0
+    ) {
+
+      previousIndex =
+        musicQueue.length - 1;
+
+    }
+
+
+    playSong(
+      previousIndex
+    );
+
+  }
+);
+
+
+/* =========================================
    EMPTY RESULTS
 ========================================= */
 
@@ -709,11 +900,11 @@ function showEmptyResults() {
       <div>☾</div>
 
       <h3>
-        No music found
+        No suitable music found
       </h3>
 
       <p>
-        Try searching for another song.
+        Try another mood or search.
       </p>
 
     </div>
@@ -724,10 +915,75 @@ function showEmptyResults() {
 
 
 /* =========================================
+   PRETTY TITLES
+========================================= */
+
+function getPrettyTitle(
+  query
+) {
+
+  const q =
+    query.toLowerCase();
+
+
+  if (
+    q.includes("synthwave") ||
+    q.includes("night drive")
+  ) {
+
+    return "🚗 Car Drive";
+
+  }
+
+
+  if (
+    q.includes("deep sleep")
+  ) {
+
+    return "🌙 Sleep";
+
+  }
+
+
+  if (
+    q.includes("lofi")
+  ) {
+
+    return "☕ Lo-fi";
+
+  }
+
+
+  if (
+    q.includes("meditation")
+  ) {
+
+    return "🧘 Meditation";
+
+  }
+
+
+  if (
+    q.includes("ambient")
+  ) {
+
+    return "🌿 Relaxing";
+
+  }
+
+
+  return `Results for "${query}"`;
+
+}
+
+
+/* =========================================
    SECURITY
 ========================================= */
 
-function escapeHTML(text) {
+function escapeHTML(
+  text
+) {
 
   return String(text).replace(
     /[&<>"']/g,
@@ -758,7 +1014,9 @@ function escapeHTML(text) {
    CLEAN TEXT
 ========================================= */
 
-function cleanText(text) {
+function cleanText(
+  text
+) {
 
   const temp =
     document.createElement(
@@ -782,8 +1040,10 @@ function cleanText(text) {
 status.textContent =
   "Ready when you are";
 
+
 trackTitle.textContent =
   "Relaxify";
+
 
 trackArtist.textContent =
   "Choose something to listen to";
