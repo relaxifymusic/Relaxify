@@ -1,29 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
+
+  <meta charset="UTF-8">
 
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
+  >
 
   <meta
     name="description"
-    content="RELAXIFY — a cinematic music experience."
-  />
+    content="RELAXIFY — a cinematic Indian music experience."
+  >
 
-  <meta name="theme-color" content="#0b0d12" />
+  <meta
+    name="theme-color"
+    content="#0b0d12"
+  >
 
   <title>RELAXIFY</title>
 
-  <!-- Main stylesheet -->
-  <link rel="stylesheet" href="style.css" />
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
 </head>
+
 
 <body>
 
   <main id="app">
+
 
     <!-- =========================================
          BACKGROUND
@@ -43,18 +53,23 @@
 
 
     <!-- =========================================
-         RELAXIFY LOGO / TITLE
+         BRAND
     ========================================== -->
 
     <header class="brand-container">
-      <h1 id="brand" class="brand">
+
+      <h1
+        id="brand"
+        class="brand"
+      >
         RELAXIFY
       </h1>
+
     </header>
 
 
     <!-- =========================================
-         LYRICS AREA
+         LYRICS
     ========================================== -->
 
     <section
@@ -62,15 +77,11 @@
       class="lyrics-area"
       aria-live="polite"
       aria-label="Song lyrics"
-    >
-
-      <!-- JavaScript will insert lyrics here -->
-
-    </section>
+    ></section>
 
 
     <!-- =========================================
-         BOTTOM CONTROLS
+         CONTROLS
     ========================================== -->
 
     <section class="controls-area">
@@ -80,9 +91,11 @@
            SEARCH
       ======================================== -->
 
-      <div id="searchContainer" class="search-container">
+      <div
+        id="searchContainer"
+        class="search-container"
+      >
 
-        <!-- Normally only this button is visible -->
         <button
           id="searchButton"
           class="search-button glass-button"
@@ -93,8 +106,6 @@
           🔍
         </button>
 
-
-        <!-- Expanded search panel -->
 
         <div
           id="searchPanel"
@@ -111,6 +122,7 @@
               🔍
             </span>
 
+
             <input
               id="searchInput"
               type="search"
@@ -118,7 +130,8 @@
               autocomplete="off"
               spellcheck="false"
               aria-label="Search songs"
-            />
+            >
+
 
             <button
               id="clearSearchButton"
@@ -132,24 +145,10 @@
           </div>
 
 
-          <!-- Search results / recent searches -->
-
           <div
             id="searchResults"
             class="search-results"
-          >
-
-            <!--
-              JavaScript will insert:
-
-              Recent searches
-              Search suggestions
-              Album artwork
-              Song name
-              Artist name
-            -->
-
-          </div>
+          ></div>
 
         </div>
 
@@ -175,7 +174,7 @@
             class="album-art"
             src="assets/default-art.jpg"
             alt="Album artwork"
-          />
+          >
 
         </div>
 
@@ -188,14 +187,15 @@
             id="songTitle"
             class="song-title"
           >
-            Loading...
+            Search for a song
           </div>
+
 
           <div
             id="artistName"
             class="artist-name"
           >
-            —
+            RELAXIFY
           </div>
 
 
@@ -212,7 +212,7 @@
               value="0"
               step="0.1"
               aria-label="Song progress"
-            />
+            >
 
           </div>
 
@@ -224,6 +224,7 @@
         ====================================== -->
 
         <div class="player-buttons">
+
 
           <button
             id="previousButton"
@@ -254,10 +255,13 @@
             ⏭
           </button>
 
+
         </div>
 
 
-        <!-- Lyrics button -->
+        <!-- =====================================
+             LYRICS BUTTON
+        ====================================== -->
 
         <button
           id="lyricsButton"
@@ -268,13 +272,15 @@
           ♪ Lyrics
         </button>
 
+
       </div>
+
 
     </section>
 
 
     <!-- =========================================
-         HIDDEN AUDIO / PLAYER HOST
+         YOUTUBE PLAYER
     ========================================== -->
 
     <div
@@ -285,7 +291,7 @@
 
 
     <!-- =========================================
-         NOTIFICATION / TOAST
+         TOAST
     ========================================== -->
 
     <div
@@ -295,6 +301,7 @@
       aria-live="polite"
     ></div>
 
+
   </main>
 
 
@@ -302,8 +309,12 @@
        JAVASCRIPT
   ========================================== -->
 
-  <script src="config.js"></script>
-  <script src="app.js"></script>
+  <!-- Cache-busting version -->
+  <script src="config.js?v=2"></script>
+
+  <script src="app.js?v=2"></script>
+
 
 </body>
+
 </html>
